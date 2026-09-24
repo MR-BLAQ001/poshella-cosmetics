@@ -29,14 +29,26 @@
         .add-btn { background: #ff4081; color: #fff; border: none; padding: 10px 15px; border-radius: 6px; font-weight: bold; width: 100%; cursor: pointer; }
         
         /* Cart Modal */
-        .cart-modal { display: none; position: fixed; top: 0; right: 0; width: 100%; max-width: 400px; height: 100%; background: #fff; box-shadow: -2px 0 10px rgba(0,0,0,0.2); z-index: 1001; flex-direction: column; }
+        .cart-modal { display: none; position: fixed; top: 0; right: 0; width: 100%; max-width: 420px; height: 100%; background: #fff; box-shadow: -2px 0 10px rgba(0,0,0,0.2); z-index: 1001; flex-direction: column; }
         .cart-modal.active { display: flex; }
         .cart-header { background: #ff4081; color: #fff; padding: 15px; display: flex; justify-content: space-between; align-items: center; }
         .cart-header h3 { margin: 0; }
         .close-cart { background: none; border: none; color: #fff; font-size: 20px; cursor: pointer; }
-        .cart-items { flex: 1; overflow-y: auto; padding: 15px; }
-        .cart-item { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
         
+        /* Detailed Cart Item Row */
+        .cart-items { flex: 1; overflow-y: auto; padding: 15px; }
+        .cart-item { display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 12px; }
+        .cart-item-img { width: 55px; height: 55px; border-radius: 8px; object-fit: cover; margin-right: 12px; }
+        .cart-item-details { flex: 1; }
+        .cart-item-details strong { font-size: 15px; color: #222; display: block; margin-bottom: 2px; }
+        .cart-item-details small { color: #e91e63; font-weight: bold; font-size: 14px; }
+        
+        /* Quantity Controls */
+        .qty-controls { display: flex; align-items: center; gap: 6px; margin-top: 6px; }
+        .qty-btn { background: #eee; border: none; border-radius: 4px; width: 22px; height: 22px; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; }
+        .qty-num { font-size: 13px; font-weight: bold; padding: 0 4px; }
+        .remove-btn { background: #ff1744; color: #fff; border: none; border-radius: 4px; padding: 4px 8px; font-size: 12px; cursor: pointer; margin-left: 10px; }
+
         /* Checkout Form inside Modal */
         .checkout-form { padding: 15px; border-top: 1px solid #eee; background: #fafafa; }
         .checkout-form input { width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 5px; font-size: 14px; }
@@ -65,19 +77,19 @@
                 <img src="https://images.unsplash.com/photo-1556228720-195a672e8a03?w=500&auto=format&fit=crop" alt="Glow Body Cream">
                 <h3>Glow Body Cream</h3>
                 <div class="price">₦5,000</div>
-                <button class="add-btn" onclick="addToCart('Glow Body Cream', 5000)">Add to Cart</button>
+                <button class="add-btn" onclick="addToCart('Glow Body Cream', 5000, 'https://images.unsplash.com/photo-1556228720-195a672e8a03?w=500&auto=format&fit=crop')">Add to Cart</button>
             </div>
             <div class="product-card">
                 <img src="https://images.unsplash.com/photo-1586495777744-4413f21062fa?w=500&auto=format&fit=crop" alt="Pink Lip Gloss">
                 <h3>Pink Lip Gloss</h3>
                 <div class="price">₦2,500</div>
-                <button class="add-btn" onclick="addToCart('Pink Lip Gloss', 2500)">Add to Cart</button>
+                <button class="add-btn" onclick="addToCart('Pink Lip Gloss', 2500, 'https://images.unsplash.com/photo-1586495777744-4413f21062fa?w=500&auto=format&fit=crop')">Add to Cart</button>
             </div>
             <div class="product-card">
                 <img src="https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=500&auto=format&fit=crop" alt="Face Serum">
                 <h3>Face Serum</h3>
                 <div class="price">₦4,000</div>
-                <button class="add-btn" onclick="addToCart('Face Serum', 4000)">Add to Cart</button>
+                <button class="add-btn" onclick="addToCart('Face Serum', 4000, 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=500&auto=format&fit=crop')">Add to Cart</button>
             </div>
         </div>
     </div>
@@ -117,10 +129,22 @@
             document.getElementById('cartModal').classList.toggle('active');
         }
 
-        function addToCart(title, price) {
-            cart.push({ title, price });
+        function addToCart(title, price, image) {
+            let existingItem = cart.find(item => item.title === title);
+            if (existingItem) {
+                existingItem.qty += 1;
+            } else {
+                cart.push({ title, price, image, qty: 1 });
+            }
             updateCart();
-            // toggleCart() removed so drawer stays hidden until cart button is clicked
+        }
+
+        function changeQty(index, delta) {
+            cart[index].qty += delta;
+            if (cart[index].qty <= 0) {
+                cart.splice(index, 1);
+            }
+            updateCart();
         }
 
         function removeFromCart(index) {
@@ -133,7 +157,8 @@
             const cartCount = document.getElementById('cart-count');
             const cartTotal = document.getElementById('cartTotal');
 
-            cartCount.innerText = cart.length;
+            let totalItems = cart.reduce((sum, item) => sum + item.qty, 0);
+            cartCount.innerText = totalItems;
 
             if (cart.length === 0) {
                 cartItemsContainer.innerHTML = '<p style="text-align: center; color: #777;">Your cart is empty</p>';
@@ -141,23 +166,31 @@
                 return;
             }
 
-            let total = 0;
+            let grandTotal = 0;
             cartItemsContainer.innerHTML = '';
 
             cart.forEach((item, index) => {
-                total += item.price;
+                let itemSubtotal = item.price * item.qty;
+                grandTotal += itemSubtotal;
+                
                 cartItemsContainer.innerHTML += `
                     <div class="cart-item">
-                        <div>
-                            <strong>${item.title}</strong><br>
-                            <small>₦${item.price.toLocaleString()}</small>
+                        <img src="${item.image}" class="cart-item-img" alt="${item.title}">
+                        <div class="cart-item-details">
+                            <strong>${item.title}</strong>
+                            <small>₦${itemSubtotal.toLocaleString()}</small>
+                            <div class="qty-controls">
+                                <button class="qty-btn" onclick="changeQty(${index}, -1)">-</button>
+                                <span class="qty-num">${item.qty}</span>
+                                <button class="qty-btn" onclick="changeQty(${index}, 1)">+</button>
+                            </div>
                         </div>
-                        <button onclick="removeFromCart(${index})" style="background:red; color:#fff; border:none; border-radius:3px; padding:2px 6px; cursor:pointer;">✕</button>
+                        <button class="remove-btn" onclick="removeFromCart(${index})">✕ Remove</button>
                     </div>
                 `;
             });
 
-            cartTotal.innerText = '₦' + total.toLocaleString();
+            cartTotal.innerText = '₦' + grandTotal.toLocaleString();
         }
 
         function payWithPaystack() {
@@ -175,7 +208,8 @@
                 return;
             }
 
-            let totalAmount = cart.reduce((sum, item) => sum + item.price, 0);
+            let totalAmount = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+            let itemsSummary = cart.map(i => `${i.title} (x${i.qty})`).join(', ');
 
             let handler = PaystackPop.setup({
                 key: PAYSTACK_PUBLIC_KEY,
@@ -187,7 +221,7 @@
                     custom_fields: [
                         { display_name: "Customer Name", variable_name: "customer_name", value: name },
                         { display_name: "Phone Number", variable_name: "phone_number", value: phone },
-                        { display_name: "Items Purchased", variable_name: "items", value: cart.map(i => i.title).join(', ') }
+                        { display_name: "Items Purchased", variable_name: "items", value: itemsSummary }
                     ]
                 },
                 callback: function(response) {
