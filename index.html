@@ -65,19 +65,19 @@
                 <img src="https://images.unsplash.com/photo-1556228720-195a672e8a03?w=500&auto=format&fit=crop" alt="Glow Body Cream">
                 <h3>Glow Body Cream</h3>
                 <div class="price">₦5,000</div>
-                <button class="add-btn" onclick="addToCart('Glow Body Cream', 5000)">Buy Now</button>
+                <button class="add-btn" onclick="addToCart('Glow Body Cream', 5000)">Add to Cart</button>
             </div>
             <div class="product-card">
                 <img src="https://images.unsplash.com/photo-1586495777744-4413f21062fa?w=500&auto=format&fit=crop" alt="Pink Lip Gloss">
                 <h3>Pink Lip Gloss</h3>
                 <div class="price">₦2,500</div>
-                <button class="add-btn" onclick="addToCart('Pink Lip Gloss', 2500)">Buy Now</button>
+                <button class="add-btn" onclick="addToCart('Pink Lip Gloss', 2500)">Add to Cart</button>
             </div>
             <div class="product-card">
                 <img src="https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=500&auto=format&fit=crop" alt="Face Serum">
                 <h3>Face Serum</h3>
                 <div class="price">₦4,000</div>
-                <button class="add-btn" onclick="addToCart('Face Serum', 4000)">Buy Now</button>
+                <button class="add-btn" onclick="addToCart('Face Serum', 4000)">Add to Cart</button>
             </div>
         </div>
     </div>
@@ -120,7 +120,7 @@
         function addToCart(title, price) {
             cart.push({ title, price });
             updateCart();
-            toggleCart();
+            // toggleCart() removed so drawer stays hidden until cart button is clicked
         }
 
         function removeFromCart(index) {
