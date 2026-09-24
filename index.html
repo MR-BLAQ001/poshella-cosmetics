@@ -152,8 +152,41 @@
         // CONFIGURATION
         const YOUR_WHATSAPP_NUMBER = '2349020211981';
         const PAYSTACK_PUBLIC_KEY = 'pk_live_YOUR_ACTUAL_PAYSTACK_KEY_HERE';
+        const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000; // 7 days in milliseconds
 
         let cart = [];
+
+        // Load saved cart when page opens
+        document.addEventListener("DOMContentLoaded", () => {
+            loadSavedCart();
+        });
+
+        function loadSavedCart() {
+            const savedData = localStorage.getItem('poshella_cart');
+            const savedTime = localStorage.getItem('poshella_cart_time');
+
+            if (savedData && savedTime) {
+                const now = new Date().getTime();
+                // Check if 7 days have passed
+                if (now - parseInt(savedTime, 10) > SEVEN_DAYS_MS) {
+                    clearSavedCart();
+                } else {
+                    cart = JSON.parse(savedData);
+                }
+            }
+            updateCart();
+        }
+
+        function saveCartToStorage() {
+            localStorage.setItem('poshella_cart', JSON.stringify(cart));
+            localStorage.setItem('poshella_cart_time', new Date().getTime().toString());
+        }
+
+        function clearSavedCart() {
+            cart = [];
+            localStorage.removeItem('poshella_cart');
+            localStorage.removeItem('poshella_cart_time');
+        }
 
         function toggleCart() {
             document.getElementById('cartModal').classList.toggle('active');
@@ -166,6 +199,7 @@
             } else {
                 cart.push({ title, price, image, qty: 1 });
             }
+            saveCartToStorage();
             updateCart();
         }
 
@@ -174,11 +208,13 @@
             if (cart[index].qty <= 0) {
                 cart.splice(index, 1);
             }
+            saveCartToStorage();
             updateCart();
         }
 
         function removeFromCart(index) {
             cart.splice(index, 1);
+            saveCartToStorage();
             updateCart();
         }
 
@@ -266,7 +302,7 @@
 
                     let waUrl = `https://wa.me/${YOUR_WHATSAPP_NUMBER}?text=${encodeURIComponent(waMessage)}`;
 
-                    cart = [];
+                    clearSavedCart();
                     document.getElementById('checkoutForm').reset();
                     updateCart();
                     toggleCart();
