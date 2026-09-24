@@ -21,7 +21,7 @@
         
         .product-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; }
         .product-card { background: #fff; border-radius: 12px; padding: 15px; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.08); overflow: hidden; }
-        .product-card img { width: 100%; height: 180px; object-fit: cover; border-radius: 8px; margin-bottom: 10px; }
+        .product-card img { width: 100%; height: 180px; object-fit: cover; border-radius: 8px; margin-bottom: 10px; display: block; }
         .product-card h3 { margin: 5px 0; font-size: 18px; }
         .price { color: #e91e63; font-weight: bold; font-size: 16px; margin-bottom: 12px; }
         .add-btn { background: #ff4081; color: #fff; border: none; padding: 10px 15px; border-radius: 6px; font-weight: bold; width: 100%; cursor: pointer; }
@@ -60,19 +60,19 @@
         <h2 class="section-title">Our Products 💄</h2>
         <div class="product-grid">
             <div class="product-card">
-                <img src="https://via.placeholder.com/200x180/ff4081/ffffff?text=Glow+Body+Cream" alt="Glow Body Cream">
+                <img src="https://images.unsplash.com/photo-1556228720-195a672e8a03?w=500&auto=format&fit=crop" alt="Glow Body Cream">
                 <h3>Glow Body Cream</h3>
                 <div class="price">₦5,000</div>
                 <button class="add-btn" onclick="addToCart('Glow Body Cream', 5000)">Add to Cart</button>
             </div>
             <div class="product-card">
-                <img src="https://via.placeholder.com/200x180/e91e63/ffffff?text=Pink+Lip+Gloss" alt="Pink Lip Gloss">
+                <img src="https://images.unsplash.com/photo-1586495777744-4413f21062fa?w=500&auto=format&fit=crop" alt="Pink Lip Gloss">
                 <h3>Pink Lip Gloss</h3>
                 <div class="price">₦2,500</div>
                 <button class="add-btn" onclick="addToCart('Pink Lip Gloss', 2500)">Add to Cart</button>
             </div>
             <div class="product-card">
-                <img src="https://via.placeholder.com/200x180/ff80ab/ffffff?text=Face+Serum" alt="Face Serum">
+                <img src="https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=500&auto=format&fit=crop" alt="Face Serum">
                 <h3>Face Serum</h3>
                 <div class="price">₦4,000</div>
                 <button class="add-btn" onclick="addToCart('Face Serum', 4000)">Add to Cart</button>
