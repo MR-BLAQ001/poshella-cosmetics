@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Poshella Cosmetics</title>
+    <!-- Paystack Inline Library -->
+    <script src="https://js.paystack.co/v1/inline.js"></script>
     <style>
         * { box-sizing: border-box; }
         body { font-family: Arial, sans-serif; margin: 0; padding: 0; background-color: #f4f4f4; color: #333; }
@@ -48,16 +50,11 @@
         .qty-num { font-size: 13px; font-weight: bold; padding: 0 4px; }
         .remove-btn { background: #ff1744; color: #fff; border: none; border-radius: 4px; padding: 4px 8px; font-size: 12px; cursor: pointer; margin-left: 10px; }
 
-        /* Checkout Form & Bank Box */
+        /* Checkout Form */
         .checkout-form { padding: 15px; border-top: 1px solid #eee; background: #fafafa; }
         .checkout-form input { width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 5px; font-size: 14px; outline: none; }
         .checkout-form input:focus { border-color: #ff4081; }
         .cart-total { display: flex; justify-content: space-between; font-weight: bold; font-size: 18px; margin-bottom: 15px; }
-        
-        .bank-details-card { background: #fff3f8; border: 1px dashed #ff4081; border-radius: 8px; padding: 12px; margin-bottom: 15px; text-align: left; }
-        .bank-details-card h4 { margin: 0 0 8px 0; color: #ff4081; font-size: 14px; text-transform: uppercase; }
-        .bank-details-card p { margin: 4px 0; font-size: 13px; color: #333; }
-        
         .pay-btn { background: #00c853; color: #fff; border: none; padding: 12px; width: 100%; border-radius: 5px; font-weight: bold; font-size: 16px; cursor: pointer; text-align: center; }
 
         /* Admin Archive Modal */
@@ -79,7 +76,7 @@
 
     <section class="hero">
         <h2>Glow Like Never Before ✨</h2>
-        <p>Select your items and place your order directly!</p>
+        <p>Select your items and pay securely online!</p>
     </section>
 
     <div class="container">
@@ -117,25 +114,17 @@
             <p style="text-align: center; color: #777;">Your cart is empty</p>
         </div>
 
-        <form class="checkout-form" id="checkoutForm" onsubmit="event.preventDefault(); submitOrder();">
+        <form class="checkout-form" id="checkoutForm" onsubmit="event.preventDefault(); payWithPaystack();">
             <div class="cart-total">
                 <span>Total Amount:</span>
                 <span id="cartTotal">₦0</span>
-            </div>
-            
-            <div class="bank-details-card">
-                <h4>🏦 Direct Bank Transfer</h4>
-                <p><strong>Bank:</strong> OPAY</p>
-                <p><strong>Account Number:</strong> 9020211981</p>
-                <p><strong>Account Name:</strong> Poshella Cosmetics</p>
-                <small style="display:block; margin-top:5px; color:#666;">Please transfer the exact total amount to the account above before placing your order.</small>
             </div>
 
             <input type="text" id="cust-name" placeholder="Full Name" required>
             <input type="email" id="cust-email" placeholder="Email Address" required>
             <input type="tel" id="cust-phone" placeholder="Phone Number (11 digits)" pattern="[0-9]{11}" required>
 
-            <button type="submit" class="pay-btn">I Have Made Payment ✅</button>
+            <button type="submit" class="pay-btn">Pay Now 💳</button>
         </form>
     </div>
 
@@ -151,6 +140,9 @@
     </div>
 
     <script>
+        // REPLACE THIS WITH YOUR REAL LIVE PAYSTACK PUBLIC KEY
+        const PAYSTACK_PUBLIC_KEY = 'pk_live_YOUR_ACTUAL_PAYSTACK_KEY_HERE';
+
         let cart = [];
 
         function toggleCart() {
@@ -226,7 +218,7 @@
             cartTotal.innerText = '₦' + grandTotal.toLocaleString();
         }
 
-        function submitOrder() {
+        function payWithPaystack() {
             if (cart.length === 0) {
                 alert('Please select an item first.');
                 return;
@@ -238,28 +230,47 @@
             let totalAmount = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
             let itemsSummary = cart.map(i => `${i.title} (x${i.qty})`).join(', ');
 
-            // Order Object
-            const orderRecord = {
-                ref: 'POSH-' + Math.floor(100000 + Math.random() * 900000),
-                date: new Date().toLocaleString(),
-                name: name,
+            let handler = PaystackPop.setup({
+                key: PAYSTACK_PUBLIC_KEY,
                 email: email,
-                phone: phone,
-                items: itemsSummary,
-                total: '₦' + totalAmount.toLocaleString()
-            };
+                amount: totalAmount * 100, // Amount in kobo
+                currency: 'NGN',
+                ref: 'POSH-' + Math.floor(100000 + Math.random() * 900000),
+                metadata: {
+                    custom_fields: [
+                        { display_name: "Customer Name", variable_name: "customer_name", value: name },
+                        { display_name: "Phone Number", variable_name: "phone_number", value: phone },
+                        { display_name: "Items Purchased", variable_name: "items", value: itemsSummary }
+                    ]
+                },
+                callback: function(response) {
+                    alert('Payment successful! Reference: ' + response.reference);
+                    
+                    // Save transaction record to local archive
+                    const orderRecord = {
+                        ref: response.reference,
+                        date: new Date().toLocaleString(),
+                        name: name,
+                        email: email,
+                        phone: phone,
+                        items: itemsSummary,
+                        total: '₦' + totalAmount.toLocaleString()
+                    };
+                    let archives = JSON.parse(localStorage.getItem('poshella_orders') || '[]');
+                    archives.unshift(orderRecord);
+                    localStorage.setItem('poshella_orders', JSON.stringify(archives));
 
-            // Save to Private Browser Archive Storage
-            let archives = JSON.parse(localStorage.getItem('poshella_orders') || '[]');
-            archives.unshift(orderRecord);
-            localStorage.setItem('poshella_orders', JSON.stringify(archives));
+                    cart = [];
+                    document.getElementById('checkoutForm').reset();
+                    updateCart();
+                    toggleCart();
+                },
+                onClose: function() {
+                    alert('Transaction cancelled.');
+                }
+            });
 
-            alert('Thank you, ' + name + '! Your order #' + orderRecord.ref + ' has been submitted. Check your OPay app to confirm receipt of payment.');
-            
-            cart = [];
-            document.getElementById('checkoutForm').reset();
-            updateCart();
-            toggleCart();
+            handler.openIframe();
         }
 
         function renderArchive() {
