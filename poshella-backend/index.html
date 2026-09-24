@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Poshella Cosmetics</title>
+    <script src="https://js.paystack.co/v1/inline.js"></script>
+    <style>
+        * { box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; margin: 0; padding: 0; background-color: #f4f4f4; color: #333; }
+        header { background-color: #000; color: #ff4081; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 900; }
+        header h1 { margin: 0; font-size: 20px; }
+        
+        .cart-icon-btn { background: #ff4081; color: #fff; border: none; padding: 8px 15px; border-radius: 20px; font-weight: bold; cursor: pointer; font-size: 14px; }
+        .cart-count { background: #fff; color: #ff4081; border-radius: 50%; padding: 2px 7px; font-size: 12px; margin-left: 5px; }
+        
+        .hero { background: #121212; color: #ff4081; text-align: center; padding: 40px 20px; }
+        .hero h2 { margin: 0 0 10px; }
+        .hero p { color: #fff; margin: 0; }
+        
+        .container { padding: 20px; max-width: 1000px; margin: 0 auto; }
+        .section-title { text-align: center; color: #ff4081; margin-bottom: 20px; }
+        
+        .product-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; }
+        .product-card { background: #fff; border-radius: 12px; padding: 15px; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.08); overflow: hidden; }
+        .product-card img { width: 100%; height: 180px; object-fit: cover; border-radius: 8px; margin-bottom: 10px; display: block; }
+        .product-card h3 { margin: 5px 0; font-size: 18px; }
+        .price { color: #e91e63; font-weight: bold; font-size: 16px; margin-bottom: 12px; }
+        .add-btn { background: #ff4081; color: #fff; border: none; padding: 10px 15px; border-radius: 6px; font-weight: bold; width: 100%; cursor: pointer; }
+        
+        .modal { display: none; position: fixed; top: 0; right: 0; width: 100%; max-width: 420px; height: 100%; background: #fff; box-shadow: -2px 0 10px rgba(0,0,0,0.2); z-index: 1001; flex-direction: column; }
+        .modal.active { display: flex; }
+        .modal-header { background: #ff4081; color: #fff; padding: 15px; display: flex; justify-content: space-between; align-items: center; }
+        .modal-header h3 { margin: 0; }
+        .close-btn { background: none; border: none; color: #fff; font-size: 20px; cursor: pointer; }
+        
+        .cart-items { flex: 1; overflow-y: auto; padding: 15px; }
+        .cart-item { display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 12px; }
+        .cart-item-img { width: 55px; height: 55px; border-radius: 8px; object-fit: cover; margin-right: 12px; }
+        .cart-item-details { flex: 1; }
+        .cart-item-details strong { font-size: 15px; color: #222; display: block; margin-bottom: 2px; }
+        .cart-item-details small { color: #e91e63; font-weight: bold; font-size: 14px; }
+        
+        .qty-controls { display: flex; align-items: center; gap: 6px; margin-top: 6px; }
+        .qty-btn { background: #eee; border: none; border-radius: 4px; width: 22px; height: 22px; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; }
+        .qty-num { font-size: 13px; font-weight: bold; padding: 0 4px; }
+        .remove-btn { background: #ff1744; color: #fff; border: none; border-radius: 4px; padding: 4px 8px; font-size: 12px; cursor: pointer; margin-left: 10px; }
+
+        .checkout-form { padding: 15px; border-top: 1px solid #eee; background: #fafafa; overflow-y: auto; max-height: 50vh; }
+        .checkout-form input { width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 5px; font-size: 14px; outline: none; }
+        .checkout-form input:focus { border-color: #ff4081; }
+        .cart-total { display: flex; justify-content: space-between; font-weight: bold; font-size: 18px; margin-bottom: 15px; }
+        .pay-btn { background: #00c853; color: #fff; border: none; padding: 12px; width: 100%; border-radius: 5px; font-weight: bold; font-size: 16px; cursor: pointer; text-align: center; }
+        .otp-btn { background: #0288d1; color: #fff; border: none; padding: 10px; width: 100%; border-radius: 5px; font-weight: bold; margin-bottom: 10px; cursor: pointer; }
+        
+        .otp-section { display: none; margin-bottom: 10px; background: #e3f2fd; padding: 10px; border-radius: 6px; }
+        .otp-section.active { display: block; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>POSHELLA COSMETICS</h1>
+        <button class="cart-icon-btn" onclick="toggleCart()">🛒 Cart <span class="cart-count" id="cart-count">0</span></button>
+    </header>
+
+    <section class="hero">
+        <h2>Glow Like Never Before ✨</h2>
+        <p>Select your items and pay securely online!</p>
+    </section>
+
+    <div class="container">
+        <h2 class="section-title">Our Products 💄</h2>
+        <div class="product-grid">
+            <div class="product-card">
+                <img src="https://images.unsplash.com/photo-1556228720-195a672e8a03?w=500&auto=format&fit=crop" alt="Glow Body Cream">
+                <h3>Glow Body Cream</h3>
+                <div class="price">₦5,000</div>
+                <button class="add-btn" onclick="addToCart('Glow Body Cream', 5000, 'https://images.unsplash.com/photo-1556228720-195a672e8a03?w=500&auto=format&fit=crop')">Add to Cart</button>
+            </div>
+            <div class="product-card">
+                <img src="https://images.unsplash.com/photo-1586495777744-4413f21062fa?w=500&auto=format&fit=crop" alt="Pink Lip Gloss">
+                <h3>Pink Lip Gloss</h3>
+                <div class="price">₦2,500</div>
+                <button class="add-btn" onclick="addToCart('Pink Lip Gloss', 2500, 'https://images.unsplash.com/photo-1586495777744-4413f21062fa?w=500&auto=format&fit=crop')">Add to Cart</button>
+            </div>
+            <div class="product-card">
+                <img src="https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=500&auto=format&fit=crop" alt="Face Serum">
+                <h3>Face Serum</h3>
+                <div class="price">₦4,000</div>
+                <button class="add-btn" onclick="addToCart('Face Serum', 4000, 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=500&auto=format&fit=crop')">Add to Cart</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Direct Checkout Drawer -->
+    <div class="modal" id="cartModal">
+        <div class="modal-header">
+            <h3>Checkout Order</h3>
+            <button class="close-btn" onclick="toggleCart()">✕</button>
+        </div>
+        
+        <div class="cart-items" id="cartItems">
+            <p style="text-align: center; color: #777;">Your cart is empty</p>
+        </div>
+
+        <form class="checkout-form" id="checkoutForm" onsubmit="event.preventDefault(); verifyAndPay();">
+            <div class="cart-total">
+                <span>Total Amount:</span>
+                <span id="cartTotal">₦0</span>
+            </div>
+
+            <input type="text" id="cust-name" placeholder="Full Name" required>
+            <input type="email" id="cust-email" placeholder="Email Address" required>
+            <input type="tel" id="cust-phone" placeholder="Phone Number (11 digits)" pattern="[0-9]{11}" required>
+            <input type="text" id="cust-address" placeholder="Delivery Address" required>
+            <input type="text" id="cust-city" placeholder="State / City" required>
+
+            <button type="button" class="otp-btn" id="sendOtpBtn" onclick="requestOtp()">Send OTP Code to Phone</button>
+
+            <div class="otp-section" id="otpSection">
+                <input type="text" id="otp-input" placeholder="Enter 6-digit OTP Code">
+                <button type="button" class="otp-btn" style="background:#43a047;" onclick="verifyOtp()">Verify OTP Code</button>
+            </div>
+
+            <button type="submit" class="pay-btn" id="payBtn" disabled style="opacity: 0.5;">Pay Now 💳</button>
+        </form>
+    </div>
+
+    <script>
+        const YOUR_WHATSAPP_NUMBER = '2349020211981';
+        const PAYSTACK_PUBLIC_KEY = 'pk_live_YOUR_ACTUAL_PAYSTACK_KEY_HERE';
+        const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
+
+        let cart = [];
+        let generatedCode = null;
+        let isPhoneVerified = false;
+
+        function loadSavedCart() {
+            try {
+                const savedData = localStorage.getItem('poshella_cart');
+                const savedTime = localStorage.getItem('poshella_cart_time');
+
+                if (savedData && savedTime) {
+                    if (Date.now() - parseInt(savedTime, 10) > SEVEN_DAYS_MS) {
+                        clearSavedCart();
+                    } else {
+                        cart = JSON.parse(savedData) || [];
+                    }
+                }
+            } catch (e) {
+                console.error("Cart error:", e);
+            }
+            updateCart();
+        }
+
+        function saveCartToStorage() {
+            localStorage.setItem('poshella_cart', JSON.stringify(cart));
+            localStorage.setItem('poshella_cart_time', Date.now().toString());
+        }
+
+        function clearSavedCart() {
+            cart = [];
+            localStorage.removeItem('poshella_cart');
+            localStorage.removeItem('poshella_cart_time');
+        }
+
+        function toggleCart() {
+            document.getElementById('cartModal').classList.toggle('active');
+        }
+
+        function addToCart(title, price, image) {
+            let existingItem = cart.find(item => item.title === title);
+            if (existingItem) {
+                existingItem.qty += 1;
+            } else {
+                cart.push({ title, price, image, qty: 1 });
+            }
+            saveCartToStorage();
+            updateCart();
+        }
+
+        function changeQty(index, delta) {
+            cart[index].qty += delta;
+            if (cart[index].qty <= 0) {
+                cart.splice(index, 1);
+            }
+            saveCartToStorage();
+            updateCart();
+        }
+
+        function removeFromCart(index) {
+            cart.splice(index, 1);
+            saveCartToStorage();
+            updateCart();
+        }
+
+        function updateCart() {
+            const cartItemsContainer = document.getElementById('cartItems');
+            const cartCount = document.getElementById('cart-count');
+            const cartTotal = document.getElementById('cartTotal');
+
+            if (!cartItemsContainer || !cartCount || !cartTotal) return;
+
+            let totalItems = cart.reduce((sum, item) => sum + item.qty, 0);
+            cartCount.innerText = totalItems;
+
+            if (cart.length === 0) {
+                cartItemsContainer.innerHTML = '<p style="text-align: center; color: #777;">Your cart is empty</p>';
+                cartTotal.innerText = '₦0';
+                return;
+            }
+
+            let grandTotal = 0;
+            cartItemsContainer.innerHTML = '';
+
+            cart.forEach((item, index) => {
+                let itemSubtotal = item.price * item.qty;
+                grandTotal += itemSubtotal;
+                
+                cartItemsContainer.innerHTML += `
+                    <div class="cart-item">
+                        <img src="${item.image}" class="cart-item-img" alt="${item.title}">
+                        <div class="cart-item-details">
+                            <strong>${item.title}</strong>
+                            <small>₦${itemSubtotal.toLocaleString()}</small>
+                            <div class="qty-controls">
+                                <button type="button" class="qty-btn" onclick="changeQty(${index}, -1)">-</button>
+                                <span class="qty-num">${item.qty}</span>
+                                <button type="button" class="qty-btn" onclick="changeQty(${index}, 1)">+</button>
+                            </div>
+                        </div>
+                        <button type="button" class="remove-btn" onclick="removeFromCart(${index})">✕ Remove</button>
+                    </div>
+                `;
+            });
+
+            cartTotal.innerText = '₦' + grandTotal.toLocaleString();
+        }
+
+        function requestOtp() {
+            const phone = document.getElementById('cust-phone').value.trim();
+            if (phone.length !== 11) {
+                alert('Please enter a valid 11-digit phone number first.');
+                return;
+            }
+
+            generatedCode = Math.floor(100000 + Math.random() * 900000).toString();
+            alert(`[TESTING OTP CODE]: Your code is ${generatedCode}`);
+
+            document.getElementById('otpSection').classList.add('active');
+            document.getElementById('sendOtpBtn').innerText = 'Resend Code';
+        }
+
+        function verifyOtp() {
+            const entered = document.getElementById('otp-input').value.trim();
+            if (entered === generatedCode) {
+                isPhoneVerified = true;
+                alert('Phone number verified successfully!');
+                
+                const payBtn = document.getElementById('payBtn');
+                payBtn.disabled = false;
+                payBtn.style.opacity = "1";
+                document.getElementById('otpSection').style.display = 'none';
+                document.getElementById('sendOtpBtn').innerText = '✓ Phone Verified';
+                document.getElementById('sendOtpBtn').disabled = true;
+            } else {
+                alert('Invalid OTP code. Please try again.');
+            }
+        }
+
+        function verifyAndPay() {
+            if (!isPhoneVerified) {
+                alert('Please request and verify your OTP code before proceeding to payment.');
+                return;
+            }
+            payWithPaystack();
+        }
+
+        function payWithPaystack() {
+            if (cart.length === 0) {
+                alert('Please select an item first.');
+                return;
+            }
+
+            const name = document.getElementById('cust-name').value.trim();
+            const email = document.getElementById('cust-email').value.trim();
+            const phone = document.getElementById('cust-phone').value.trim();
+            const address = document.getElementById('cust-address').value.trim();
+            const city = document.getElementById('cust-city').value.trim();
+
+            let totalAmount = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+            let itemsSummary = cart.map(i => `${i.title} (x${i.qty})`).join(', ');
+
+            let handler = PaystackPop.setup({
+                key: PAYSTACK_PUBLIC_KEY,
+                email: email,
+                amount: totalAmount * 100,
+                currency: 'NGN',
+                ref: 'POSH-' + Math.floor(100000 + Math.random() * 900000),
+                callback: function(response) {
+                    let waMessage = `*NEW PAID ORDER!* 🛍️\n\n` +
+                        `*Ref:* ${response.reference}\n` +
+                        `*Name:* ${name}\n` +
+                        `*Phone:* ${phone}\n` +
+                        `*Address:* ${address}, ${city}\n\n` +
+                        `*Items:* ${itemsSummary}\n` +
+                        `*Total:* ₦${totalAmount.toLocaleString()}`;
+
+                    clearSavedCart();
+                    window.location.href = `https://wa.me/${YOUR_WHATSAPP_NUMBER}?text=${encodeURIComponent(waMessage)}`;
+                },
+                onClose: function() {
+                    alert('Transaction cancelled.');
+                }
+            });
+
+            handler.openIframe();
+        }
+
+        loadSavedCart();
+    </script>
+</body>
+</html>
