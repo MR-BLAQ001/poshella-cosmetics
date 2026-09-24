@@ -149,37 +149,35 @@
     </div>
 
     <script>
-        // CONFIGURATION
         const YOUR_WHATSAPP_NUMBER = '2349020211981';
         const PAYSTACK_PUBLIC_KEY = 'pk_live_YOUR_ACTUAL_PAYSTACK_KEY_HERE';
-        const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000; // 7 days in milliseconds
+        const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
 
         let cart = [];
 
-        // Load saved cart when page opens
-        document.addEventListener("DOMContentLoaded", () => {
-            loadSavedCart();
-        });
-
+        // Safe immediate loading on script start
         function loadSavedCart() {
-            const savedData = localStorage.getItem('poshella_cart');
-            const savedTime = localStorage.getItem('poshella_cart_time');
+            try {
+                const savedData = localStorage.getItem('poshella_cart');
+                const savedTime = localStorage.getItem('poshella_cart_time');
 
-            if (savedData && savedTime) {
-                const now = new Date().getTime();
-                // Check if 7 days have passed
-                if (now - parseInt(savedTime, 10) > SEVEN_DAYS_MS) {
-                    clearSavedCart();
-                } else {
-                    cart = JSON.parse(savedData);
+                if (savedData && savedTime) {
+                    const now = Date.now();
+                    if (now - parseInt(savedTime, 10) > SEVEN_DAYS_MS) {
+                        clearSavedCart();
+                    } else {
+                        cart = JSON.parse(savedData) || [];
+                    }
                 }
+            } catch (e) {
+                console.error("Cart loading error:", e);
             }
             updateCart();
         }
 
         function saveCartToStorage() {
             localStorage.setItem('poshella_cart', JSON.stringify(cart));
-            localStorage.setItem('poshella_cart_time', new Date().getTime().toString());
+            localStorage.setItem('poshella_cart_time', Date.now().toString());
         }
 
         function clearSavedCart() {
@@ -223,6 +221,8 @@
             const cartCount = document.getElementById('cart-count');
             const cartTotal = document.getElementById('cartTotal');
 
+            if (!cartItemsContainer || !cartCount || !cartTotal) return;
+
             let totalItems = cart.reduce((sum, item) => sum + item.qty, 0);
             cartCount.innerText = totalItems;
 
@@ -262,6 +262,11 @@
         function payWithPaystack() {
             if (cart.length === 0) {
                 alert('Please select an item first.');
+                return;
+            }
+
+            if (typeof PaystackPop === 'undefined') {
+                alert('Paystack key missing or script blocked. Please update PK_LIVE key.');
                 return;
             }
 
@@ -316,6 +321,9 @@
 
             handler.openIframe();
         }
+
+        // Initialize cart loading immediately
+        loadSavedCart();
     </script>
 
 </body>
