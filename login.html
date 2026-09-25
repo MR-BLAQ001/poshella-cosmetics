@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Poshella Cosmetics - Login</title>
+  <style>
+    :root {
+      --bg-color: #0d0d0d;
+      --card-bg: #1a1a1a;
+      --accent: #d4af37;
+      --text: #ffffff;
+    }
+    body {
+      background-color: var(--bg-color);
+      color: var(--text);
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+    .login-card, .dashboard-card {
+      background: var(--card-bg);
+      padding: 2.5rem;
+      border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+      width: 100%;
+      max-width: 360px;
+      text-align: center;
+      border: 1px solid #333;
+    }
+    h2 { color: var(--accent); margin-bottom: 1.5rem; }
+    .input-group { margin-bottom: 1.2rem; text-align: left; }
+    label { display: block; font-size: 0.85rem; margin-bottom: 0.4rem; color: #ccc; }
+    input {
+      width: 100%;
+      padding: 0.75rem;
+      border-radius: 6px;
+      border: 1px solid #444;
+      background: #262626;
+      color: #fff;
+      box-sizing: border-box;
+    }
+    button {
+      width: 100%;
+      padding: 0.8rem;
+      border: none;
+      border-radius: 6px;
+      background: var(--accent);
+      color: #000;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 0.5rem;
+    }
+    button:hover { opacity: 0.9; }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+
+  <!-- LOGIN CONTAINER -->
+  <div id="login-section" class="login-card">
+    <h2>Poshella Cosmetics</h2>
+    <form id="login-form">
+      <div class="input-group">
+        <label for="email">Email Address</label>
+        <input type="email" id="email" required placeholder="name@domain.com">
+      </div>
+      <div class="input-group">
+        <label for="phone">Phone Number</label>
+        <input type="tel" id="phone" required placeholder="+234...">
+      </div>
+      <button type="submit">Log In</button>
+    </form>
+  </div>
+
+  <!-- AUTHENTICATED USER CONTENT -->
+  <div id="app-section" class="dashboard-card hidden">
+    <h2>Welcome Back!</h2>
+    <p id="user-info"></p>
+    <p><small>Your session expires in 1 hour.</small></p>
+    <button id="logout-btn">Log Out</button>
+  </div>
+
+  <script>
+    const ONE_HOUR_MS = 60 * 60 * 1000; // 1 hour in milliseconds
+
+    const loginSection = document.getElementById('login-section');
+    const appSection = document.getElementById('app-section');
+    const loginForm = document.getElementById('login-form');
+    const userInfo = document.getElementById('user-info');
+    const logoutBtn = document.getElementById('logout-btn');
+
+    // Check auth status on page load
+    window.addEventListener('DOMContentLoaded', checkAuth);
+
+    function checkAuth() {
+      const authData = JSON.parse(localStorage.getItem('poshella_session'));
+
+      if (authData) {
+        const currentTime = new Date().getTime();
+        const timeElapsed = currentTime - authData.loginTimestamp;
+
+        // If time passed is less than 1 hour (3600000ms)
+        if (timeElapsed < ONE_HOUR_MS) {
+          showApp(authData.email);
+          return;
+        } else {
+          // Session elapsed - clear storage
+          localStorage.removeItem('poshella_session');
+        }
+      }
+      showLogin();
+    }
+
+    loginForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const email = document.getElementById('email').value;
+      const phone = document.getElementById('phone').value;
+
+      const sessionObj = {
+        email: email,
+        phone: phone,
+        loginTimestamp: new Date().getTime()
+      };
+
+      // Save to localStorage
+      localStorage.setItem('poshella_session', JSON.stringify(sessionObj));
+      showApp(email);
+    });
+
+    logoutBtn.addEventListener('click', () => {
+      localStorage.removeItem('poshella_session');
+      showLogin();
+    });
+
+    function showApp(email) {
+      loginSection.classList.add('hidden');
+      appSection.classList.remove('hidden');
+      userInfo.textContent = `Logged in as: ${email}`;
+    }
+
+    function showLogin() {
+      loginSection.classList.remove('hidden');
+      appSection.classList.add('hidden');
+    }
+  </script>
+</body>
+</html>
