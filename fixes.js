@@ -1,51 +1,68 @@
 (function() {
   const VIEW_KEY = 'poshella_saved_page';
 
-  // 1. Core function to ensure cart items render if cart has data
-  function checkAndRenderCart() {
+  // 1. Force cart re-render safely once element is ready in DOM
+  function forceCartRender() {
     const rawCart = localStorage.getItem('poshella_cart') || localStorage.getItem('cart') || '[]';
     let cart = [];
     try { cart = JSON.parse(rawCart); } catch(e) { cart = []; }
 
-    if (Array.isArray(cart) && cart.length > 0) {
+    if (cart.length > 0) {
       if (typeof window.renderCart === 'function') {
         window.renderCart();
       }
     }
   }
 
-  // 2. Intercept switchView to handle cart rendering instantly on tab switch
-  function setupViewSwitchInterceptor() {
-    if (typeof window.switchView === 'function' && !window._switchViewIntercepted) {
-      const originalSwitch = window.switchView;
-      window.switchView = function(viewId) {
-        try { localStorage.setItem(VIEW_KEY, viewId); } catch(e) {}
-        originalSwitch(viewId);
-        
-        if (viewId === 'cart' || viewId === 'cart-view') {
-          setTimeout(checkAndRenderCart, 50);
-        }
-      };
-      window._switchViewIntercepted = true;
-    }
+  // 2. Intercept switchView and save active tab
+  if (typeof window.switchView === 'function' && !window._switchWrapped) {
+    const origSwitch = window.switchView;
+    window.switchView = function(viewId) {
+      try { localStorage.setItem(VIEW_KEY, viewId); } catch(e) {}
+      origSwitch(viewId);
+      if (viewId === 'cart' || viewId === 'cart-view') {
+        setTimeout(forceCartRender, 50);
+      }
+    };
+    window._switchWrapped = true;
   }
 
-  // 3. Restore active view and force cart render on refresh
-  function restoreSavedView() {
-    setupViewSwitchInterceptor();
+  // 3. Monitor the Cart container until it appears on screen
+  function observeCartAndRender() {
+    const targetNode = document.body;
+    const config = { childList: true, subtree: true };
+
+    const callback = function(mutationsList, observer) {
+      const rawCart = localStorage.getItem('poshella_cart') || localStorage.getItem('cart') || '[]';
+      let cart = [];
+      try { cart = JSON.parse(rawCart); } catch(e) { cart = []; }
+
+      if (cart.length > 0) {
+        forceCartRender();
+      }
+    };
+
+    const observer = new MutationObserver(callback);
+    observer.observe(targetNode, config);
+
+    // Stop observing after 3 seconds to save performance
+    setTimeout(() => observer.disconnect(), 3000);
+  }
+
+  // 4. On page refresh: restore view and trigger cart checks
+  function initOnRefresh() {
     try {
       const savedView = localStorage.getItem(VIEW_KEY);
       if (savedView && typeof window.switchView === 'function') {
         window.switchView(savedView);
-        if (savedView === 'cart' || savedView === 'cart-view') {
-          setTimeout(checkAndRenderCart, 100);
-          setTimeout(checkAndRenderCart, 300);
-        }
       }
     } catch(e) {}
+
+    forceCartRender();
+    observeCartAndRender();
   }
 
-  // 4. Suppress browser alerts & replace with toast
+  // Toast notifications replacement for alerts
   window.alert = function(msg) {
     let toast = document.getElementById('poshella-toast');
     if (!toast) {
@@ -59,10 +76,9 @@
     setTimeout(() => { toast.style.opacity = '0'; }, 2000);
   };
 
-  // Run immediately and after DOM completes
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', restoreSavedView);
+    document.addEventListener('DOMContentLoaded', initOnRefresh);
   } else {
-    restoreSavedView();
+    initOnRefresh();
   }
 })();
