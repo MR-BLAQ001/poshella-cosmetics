@@ -138,23 +138,21 @@
     .menu-item { display: flex; justify-content: space-between; align-items: center; padding: 13px 16px; border-bottom: 1px solid #1f1f1f; color: #ddd; font-size: 0.85rem; cursor: pointer; }
     .menu-item-left { display: flex; align-items: center; gap: 12px; }
 
-    /* BOTTOM NAV */
+    /* BOTTOM NAV & BADGE */
     .bottom-nav {
       position: fixed; bottom: 0; left: 0; width: 100%; background: #121212; border-top: 1px solid #222; display: flex; justify-content: space-around; padding: 8px 0; z-index: 1000;
     }
-    .nav-item { text-align: center; color: #888; font-size: 0.65rem; text-decoration: none; cursor: pointer; position: relative; }
+    .nav-item { position: relative; text-align: center; color: #888; font-size: 0.65rem; text-decoration: none; cursor: pointer; display: inline-flex; flex-direction: column; align-items: center; justify-content: center; }
     .nav-item.active { color: #ff2a75; }
-    .nav-item span { display: block; font-size: 1.2rem; margin-bottom: 2px; }
+    .nav-item span.icon { display: block; font-size: 1.2rem; margin-bottom: 2px; }
     
-    .nav-item { position: relative; display: inline-flex; flex-direction: column; align-items: center; justify-content: center; }
-    .nav-item { position: relative; display: inline-flex; flex-direction: column; align-items: center; justify-content: center; }
     .badge {
       position: absolute;
       top: 0px;
-      right: 12px;
+      right: 0px;
       background: #ff2a75;
       color: #ffffff;
-      font-size: 0.45rem;
+      font-size: 0.5rem;
       font-weight: bold;
       width: 12px;
       height: 12px;
@@ -164,7 +162,6 @@
       display: none;
       padding: 0;
     }
-
   </style>
 </head>
 <body>
@@ -324,16 +321,16 @@
   <!-- BOTTOM APP NAVIGATION -->
   <nav class="bottom-nav" id="mainBottomNav">
     <div class="nav-item active" id="navHome" onclick="switchView('home')">
-      <span>🏠</span> Home
+      <span class="icon">🏠</span> Home
     </div>
     <div class="nav-item" id="navCategories">
-      <span>📋</span> Categories
+      <span class="icon">📋</span> Categories
     </div>
     <div class="nav-item" id="navCart" onclick="switchView('cart')">
-      <span>🛒</span> Cart <span class="badge" id="cartBadge">0</span>
+      <span class="icon">🛒</span> Cart <span class="badge" id="cartBadge">0</span>
     </div>
     <div class="nav-item" id="navAccount" onclick="switchView('account')">
-      <span>👤</span> Account
+      <span class="icon">👤</span> Account
     </div>
   </nav>
 
@@ -343,7 +340,7 @@
     let timerInterval = null;
     const CART_STORAGE_KEY = 'poshella_cart_data';
     const TIMER_STORAGE_KEY = 'poshella_cart_expiry';
-    const RESERVATION_MINUTES = 7 * 24 * 60; // 7 days (10080 mins)
+    const RESERVATION_MINUTES = 7 * 24 * 60; // 7 days
 
     const productsDatabase = [
       { id: 1, name: "Glow Body Cream - 250ml", price: 5000, img: "https://images.unsplash.com/photo-1556228720-195a672e8a03?w=500" },
@@ -386,19 +383,22 @@
 
         if (diff <= 0) {
           clearInterval(timerInterval);
-          clearCart(true); // Expired reset
+          clearCart();
           showToast("Cart reservation expired!");
           return;
         }
 
-        const mins = Math.floor(diff / (1000 * 60));
-        const secs = Math.floor((diff % (1000 * 60)) / 1000);
-        const formatted Mins = String(mins).padStart(2, '0');
-        const formattedSecs = String(secs).padStart(2, '0');
+        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
 
         const displayEl = document.getElementById('cartTimerDisplay');
         if (displayEl) {
-          displayEl.textContent = `${formattedMins}:${formattedSecs}`;
+          if (days > 0) {
+            displayEl.textContent = `${days}d ${hours}h`;
+          } else {
+            displayEl.textContent = `${hours}h ${mins}m`;
+          }
         }
       }, 1000);
     }
@@ -417,6 +417,7 @@
 
     function renderMainGrid() {
       const grid = document.getElementById('mainProductGrid');
+      if (!grid) return;
       grid.innerHTML = productsDatabase.map(p => `
         <div class="product-card" onclick="openProductDetail(${p.id})">
           <img src="${p.img}" alt="${p.name}">
@@ -479,7 +480,7 @@
       
       if (totalCount > 0) {
         badgeEl.textContent = totalCount;
-        badgeEl.style.display = 'inline-block';
+        badgeEl.style.display = 'block';
       } else {
         badgeEl.style.display = 'none';
       }
@@ -508,7 +509,7 @@
       renderCartView();
     }
 
-    function clearCart(expired = false) {
+    function clearCart() {
       cart = [];
       localStorage.removeItem(CART_STORAGE_KEY);
       localStorage.removeItem(TIMER_STORAGE_KEY);
