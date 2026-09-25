@@ -844,6 +844,7 @@
 
       navHome.classList.remove('active');
       navCart.classList.remove('active');
+        if (navCategories) navCategories.classList.remove('active');
       navAccount.classList.remove('active');
         if (navCategories) navCategories.classList.remove('active');
 
@@ -878,7 +879,12 @@
         helpView.classList.add('active');
         mainHeader.style.display = 'none';
         mainBottomNav.style.display = 'flex';
-      } else {
+      } else if (target === 'categories') {
+        homeView.style.display = 'block';
+        if (navCategories) navCategories.classList.add('active');
+        mainBottomNav.style.display = 'flex';
+        window.scrollTo({ top: 180, behavior: 'smooth' });
+    } else {
         homeView.style.display = 'block';
         navHome.classList.add('active');
         mainBottomNav.style.display = 'flex';
