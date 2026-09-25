@@ -55,3 +55,60 @@
     }
   };
 })();
+
+// --- FIX: CART BADGE & EMPTY STATE SYNC ---
+(function() {
+  function syncCartUI() {
+    const rawCart = localStorage.getItem('poshella_cart') || localStorage.getItem('cart') || '[]';
+    let cart = [];
+    try {
+      cart = JSON.parse(rawCart);
+    } catch(e) {
+      cart = [];
+    }
+
+    const cartCount = Array.isArray(cart) ? cart.length : 0;
+
+    // Update Header Text
+    document.querySelectorAll('.view-title, header h2, .cart-header-title').forEach(el => {
+      if (el.textContent.includes('Shopping Cart')) {
+        el.textContent = `Shopping Cart (${cartCount})`;
+      }
+    });
+
+    // Update Bottom Nav Badge
+    document.querySelectorAll('.cart-badge, [id*="cart-count"], [class*="badge"]').forEach(badge => {
+      if (cartCount > 0) {
+        badge.textContent = cartCount;
+        badge.style.display = 'inline-block';
+      } else {
+        badge.textContent = '0';
+        badge.style.display = 'none';
+      }
+    });
+
+    // If cart array has items but page shows empty view, trigger UI refresh
+    const cartContainer = document.getElementById('cartItemsContainer') || document.getElementById('cart-items');
+    if (cartCount > 0 && cartContainer && cartContainer.innerHTML.includes('currently empty')) {
+      if (typeof window.renderCart === 'function') {
+        window.renderCart();
+      }
+    }
+  }
+
+  // Intercept cart updates
+  const originalAddToCart = window.addToCart;
+  if (typeof originalAddToCart === 'function') {
+    window.addToCart = function(...args) {
+      originalAddToCart.apply(this, args);
+      setTimeout(syncCartUI, 100);
+    };
+  }
+
+  // Run sync on page load and view switch
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', syncCartUI);
+  } else {
+    syncCartUI();
+  }
+})();
