@@ -145,7 +145,24 @@
     .nav-item { text-align: center; color: #888; font-size: 0.65rem; text-decoration: none; cursor: pointer; position: relative; }
     .nav-item.active { color: #ff2a75; }
     .nav-item span { display: block; font-size: 1.2rem; margin-bottom: 2px; }
-    .badge { position: absolute; top: -3px; right: 12px; background: #ff2a75; color: #fff; font-size: 0.6rem; padding: 2px 5px; border-radius: 10px; font-weight: bold; }
+    
+    .nav-item { position: relative; display: inline-flex; flex-direction: column; align-items: center; justify-content: center; }
+    .badge {
+      position: absolute;
+      top: -2px;
+      right: 18px;
+      background: #ff2a75;
+      color: #ffffff;
+      font-size: 0.55rem;
+      font-weight: 700;
+      min-width: 14px;
+      height: 14px;
+      line-height: 14px;
+      padding: 0 3px;
+      border-radius: 50%;
+      text-align: center;
+    }
+
   </style>
 </head>
 <body>
