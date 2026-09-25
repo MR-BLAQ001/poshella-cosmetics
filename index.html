@@ -863,13 +863,16 @@
       } else if (target === 'details') {
         detailsView.classList.add('active');
         mainBottomNav.style.display = 'none';
-      } else if (target === 'categories') {
-        homeView.style.display = 'block';
-        if (navCategories) navCategories.classList.add('active');
-        mainBottomNav.style.display = 'flex';
-        window.scrollTo({ top: 150, behavior: 'smooth' });
-    } else if (target === 'account') {
-        accountView.classList.add('active');
+} else if (target === 'categories') {
+    homeView.style.display = 'none';
+
+    const categoriesView = document.getElementById('categoriesView');
+    if (categoriesView) categoriesView.style.display = 'block';
+
+    if (navCategories) navCategories.classList.add('active');
+    mainBottomNav.style.display = 'flex';
+} else if (target === 'account') {
+    accountView.classList.add('active');
         navAccount.classList.add('active');
         mainBottomNav.style.display = 'flex';
       } else if (target === 'checkout') {
@@ -947,4 +950,57 @@ function openCallToOrder(event) {
   }
 }
 </script>
-</body></html>
+<!-- POSHELLA CATEGORIES PAGE -->
+<div id="categoriesView" style="display:none; padding:20px 15px 100px; background:#fff; min-height:100vh;">
+
+  <h2 style="margin:10px 0 5px; font-size:24px;">Beauty Categories</h2>
+  <p style="margin:0 0 20px; color:#777;">Shop your favorite beauty products</p>
+
+  <div style="
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:14px;
+  ">
+
+    <div style="border:1px solid #eee;border-radius:14px;overflow:hidden;background:#fff;">
+      <img src="https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=500" style="width:100%;height:130px;object-fit:cover;">
+      <div style="padding:12px;font-weight:bold;">Makeup</div>
+    </div>
+
+    <div style="border:1px solid #eee;border-radius:14px;overflow:hidden;background:#fff;">
+      <img src="https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500" style="width:100%;height:130px;object-fit:cover;">
+      <div style="padding:12px;font-weight:bold;">Skincare</div>
+    </div>
+
+    <div style="border:1px solid #eee;border-radius:14px;overflow:hidden;background:#fff;">
+      <img src="https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=500" style="width:100%;height:130px;object-fit:cover;">
+      <div style="padding:12px;font-weight:bold;">Hair Care</div>
+    </div>
+
+    <div style="border:1px solid #eee;border-radius:14px;overflow:hidden;background:#fff;">
+      <img src="https://images.unsplash.com/photo-1541643600914-78b084683601?w=500" style="width:100%;height:130px;object-fit:cover;">
+      <div style="padding:12px;font-weight:bold;">Fragrances</div>
+    </div>
+
+    <div style="border:1px solid #eee;border-radius:14px;overflow:hidden;background:#fff;">
+      <img src="https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?w=500" style="width:100%;height:130px;object-fit:cover;">
+      <div style="padding:12px;font-weight:bold;">Body Care</div>
+    </div>
+
+    <div style="border:1px solid #eee;border-radius:14px;overflow:hidden;background:#fff;">
+      <img src="https://images.unsplash.com/photo-1604654894610-df63bc536371?w=500" style="width:100%;height:130px;object-fit:cover;">
+      <div style="padding:12px;font-weight:bold;">Nail Care</div>
+    </div>
+
+    <div style="border:1px solid #eee;border-radius:14px;overflow:hidden;background:#fff;">
+      <img src="https://images.unsplash.com/photo-1571781926291-c477ebfd024b?w=500" style="width:100%;height:130px;object-fit:cover;">
+      <div style="padding:12px;font-weight:bold;">Beauty Tools</div>
+    </div>
+
+    <div style="border:1px solid #eee;border-radius:14px;overflow:hidden;background:#fff;">
+      <img src="https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=500" style="width:100%;height:130px;object-fit:cover;">
+      <div style="padding:12px;font-weight:bold;">Men's Grooming</div>
+    </div>
+
+  </div>
+</div></body></html>
