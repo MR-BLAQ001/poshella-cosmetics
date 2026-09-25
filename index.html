@@ -220,7 +220,7 @@
     </div>
 
     <div id="cartTimerBox" class="cart-timer-box" style="display:none;">
-      ⏳ Cart reserved for <span id="cartTimerDisplay">15:00</span> minutes
+      ⏳ Cart reserved for <span id="cartTimerDisplay">7 days</span>
     </div>
 
     <div id="cartItemsContainer">
@@ -341,7 +341,7 @@
     let timerInterval = null;
     const CART_STORAGE_KEY = 'poshella_cart_data';
     const TIMER_STORAGE_KEY = 'poshella_cart_expiry';
-    const RESERVATION_MINUTES = 15;
+    const RESERVATION_MINUTES = 7 * 24 * 60; // 7 days (10080 mins)
 
     const productsDatabase = [
       { id: 1, name: "Glow Body Cream - 250ml", price: 5000, img: "https://images.unsplash.com/photo-1556228720-195a672e8a03?w=500" },
@@ -473,7 +473,15 @@
 
     function updateCartBadge() {
       const totalCount = cart.reduce((sum, item) => sum + item.qty, 0);
-      document.getElementById('cartBadge').textContent = totalCount;
+      const badgeEl = document.getElementById('cartBadge');
+      
+      if (totalCount > 0) {
+        badgeEl.textContent = totalCount;
+        badgeEl.style.display = 'inline-block';
+      } else {
+        badgeEl.style.display = 'none';
+      }
+      
       document.getElementById('cartItemCountHeader').textContent = totalCount;
     }
 
