@@ -77,31 +77,40 @@
         .cart-total { display: flex; justify-content: space-between; font-weight: bold; font-size: 18px; margin-bottom: 15px; }
         .pay-btn { background: #00c853; color: #fff; border: none; padding: 12px; width: 100%; border-radius: 5px; font-weight: bold; font-size: 16px; cursor: pointer; text-align: center; }
     
-/* Auth Header & Modal Styles */
+
+/* COMPACT AVATAR & PROFILE STYLES */
 .header-actions {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
 }
-.auth-btn {
-  background: #ff2a75;
-  color: #fff;
-  border: none;
-  padding: 8px 14px;
-  border-radius: 20px;
-  font-weight: bold;
-  cursor: pointer;
-  font-size: 0.9rem;
+.profile-bubble {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: #2a2a2a;
+  border: 2px solid #ff2a75;
   display: flex;
+  justify-content: center;
   align-items: center;
-  gap: 5px;
+  cursor: pointer;
+  overflow: hidden;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
 }
-.auth-btn:hover { opacity: 0.9; }
+.profile-bubble img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.profile-bubble span {
+  font-size: 1.1rem;
+}
 
+/* MODAL STYLES */
 .modal-overlay {
   position: fixed;
   top: 0; left: 0; width: 100%; height: 100%;
-  background: rgba(0,0,0,0.7);
+  background: rgba(0,0,0,0.75);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -109,42 +118,74 @@
 }
 .modal-overlay.hidden { display: none; }
 .auth-modal {
-  background: #1e1e1e;
+  background: #181818;
   color: #fff;
-  padding: 20px;
-  border-radius: 12px;
-  width: 90%;
-  max-width: 340px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+  padding: 24px;
+  border-radius: 14px;
+  width: 88%;
+  max-width: 320px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.6);
   position: relative;
   border: 1px solid #333;
+  text-align: center;
 }
-.auth-modal h3 { color: #ff2a75; margin-top: 0; text-align: center; }
-.auth-modal input {
+.auth-modal h3 { color: #ff2a75; margin-top: 0; margin-bottom: 15px; font-size: 1.2rem; }
+.avatar-preview {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  border: 2px solid #ff2a75;
+  margin: 0 auto 12px;
+  object-fit: cover;
+  display: block;
+  background: #262626;
+}
+.upload-label {
+  display: inline-block;
+  font-size: 0.75rem;
+  background: #333;
+  color: #ff2a75;
+  padding: 6px 12px;
+  border-radius: 20px;
+  cursor: pointer;
+  margin-bottom: 15px;
+  border: 1px solid #ff2a75;
+}
+.auth-modal input[type="email"], .auth-modal input[type="tel"] {
   width: 100%;
   padding: 10px;
-  margin: 8px 0 16px;
-  border-radius: 6px;
-  border: 1px solid #444;
-  background: #2a2a2a;
+  margin: 6px 0 14px;
+  border-radius: 8px;
+  border: 1px solid #333;
+  background: #242424;
   color: #fff;
   box-sizing: border-box;
+  font-size: 0.9rem;
 }
 .auth-modal button.submit-btn {
   width: 100%;
-  padding: 10px;
+  padding: 11px;
   background: #ff2a75;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   color: #fff;
   font-weight: bold;
   cursor: pointer;
+  font-size: 0.95rem;
 }
 .close-modal {
   position: absolute;
-  top: 10px; right: 15px;
+  top: 10px; right: 14px;
   background: none; border: none;
-  color: #aaa; font-size: 1.4rem; cursor: pointer;
+  color: #888; font-size: 1.5rem; cursor: pointer;
+}
+.logout-link {
+  display: block;
+  margin-top: 12px;
+  color: #ff4d4d;
+  font-size: 0.8rem;
+  text-decoration: underline;
+  cursor: pointer;
 }
 
 </style>
@@ -156,7 +197,14 @@
         
     <div class="header-actions">
       <button id="profileBtn" class="auth-btn" onclick="openAuthModal()">👤 Login</button>
-      <button class="cart-icon-btn" onclick="toggleCart()">🛒 Cart <span class="cart-count" id="cart-count">0</span></button>
+      
+<div class="header-actions">
+  <button class="cart-icon-btn" onclick="toggleCart()">🛒 Cart <span class="cart-count" id="cart-count">0</span></button>
+  <div id="profileBubble" class="profile-bubble" onclick="openProfileModal()">
+    <span id="avatarIcon">👤</span>
+  </div>
+</div>
+
     </div>
     
     </header>
@@ -403,24 +451,43 @@
     </script>
 
 
-<!-- AUTH MODAL -->
+
+
+
+
+
+
+<!-- PROFILE & AUTH MODAL -->
 <div id="authModal" class="modal-overlay hidden">
   <div class="auth-modal">
     <button class="close-modal" onclick="closeAuthModal()">&times;</button>
-    <h3 id="modalTitle">Account Login</h3>
+    <h3 id="modalTitle">Account Profile</h3>
+    
+    <img id="avatarPreview" src="" class="avatar-preview hidden" alt="Profile Picture">
+    <div id="defaultAvatarIcon" style="font-size: 2.5rem; margin-bottom: 8px;">👤</div>
+    
+    <label class="upload-label" for="avatarInput">📷 Choose Photo from Gallery</label>
+    <input type="file" id="avatarInput" accept="image/*" style="display:none;" onchange="previewGalleryImage(event)">
+
     <form id="authForm" onsubmit="handleAuthSubmit(event)">
-      <label style="font-size: 0.8rem;">Email Address</label>
-      <input type="email" id="userEmail" placeholder="yourname@gmail.com" required>
-      <label style="font-size: 0.8rem;">Phone Number</label>
-      <input type="tel" id="userPhone" placeholder="08012345678" required>
-      <button type="submit" class="submit-btn">Login & Continue</button>
+      <div style="text-align: left;">
+        <label style="font-size: 0.75rem; color: #aaa;">Email Address</label>
+        <input type="email" id="userEmail" placeholder="yourname@gmail.com" required>
+        
+        <label style="font-size: 0.75rem; color: #aaa;">Phone Number</label>
+        <input type="tel" id="userPhone" placeholder="08012345678" required>
+      </div>
+      <button type="submit" class="submit-btn" id="saveProfileBtn">Save Profile</button>
     </form>
+    
+    <span id="logoutBtn" class="logout-link hidden" onclick="logoutUser()">Log Out</span>
   </div>
 </div>
 
 
 <script>
 const SESSION_MS = 60 * 60 * 1000; // 1 hour session
+let tempAvatarBase64 = null;
 
 function getActiveSession() {
   const session = JSON.parse(localStorage.getItem('poshella_session'));
@@ -436,20 +503,56 @@ function getActiveSession() {
 
 function updateProfileUI() {
   const session = getActiveSession();
-  const profileBtn = document.getElementById('profileBtn');
-  if (!profileBtn) return;
+  const profileBubble = document.getElementById('profileBubble');
   
   if (session) {
-    const shortEmail = session.email.split('@')[0];
-    profileBtn.innerHTML = `👤 ${shortEmail}`;
-    profileBtn.onclick = logoutUser;
+    if (session.avatar) {
+      profileBubble.innerHTML = `<img src="${session.avatar}" alt="Avatar">`;
+    } else {
+      profileBubble.innerHTML = `<span>👤</span>`;
+    }
   } else {
-    profileBtn.innerHTML = `👤 Login`;
-    profileBtn.onclick = openAuthModal;
+    profileBubble.innerHTML = `<span>👤</span>`;
   }
 }
 
-function openAuthModal() {
+function openProfileModal() {
+  const session = getActiveSession();
+  const modalTitle = document.getElementById('modalTitle');
+  const emailInput = document.getElementById('userEmail');
+  const phoneInput = document.getElementById('userPhone');
+  const logoutBtn = document.getElementById('logoutBtn');
+  const saveBtn = document.getElementById('saveProfileBtn');
+  const avatarPreview = document.getElementById('avatarPreview');
+  const defaultIcon = document.getElementById('defaultAvatarIcon');
+
+  if (session) {
+    modalTitle.textContent = "Edit Profile";
+    emailInput.value = session.email || '';
+    phoneInput.value = session.phone || '';
+    logoutBtn.classList.remove('hidden');
+    saveBtn.textContent = "Update Profile";
+    
+    if (session.avatar) {
+      avatarPreview.src = session.avatar;
+      avatarPreview.classList.remove('hidden');
+      defaultIcon.classList.add('hidden');
+      tempAvatarBase64 = session.avatar;
+    } else {
+      avatarPreview.classList.add('hidden');
+      defaultIcon.classList.remove('hidden');
+    }
+  } else {
+    modalTitle.textContent = "Create Account / Login";
+    emailInput.value = '';
+    phoneInput.value = '';
+    logoutBtn.classList.add('hidden');
+    saveBtn.textContent = "Login & Continue";
+    avatarPreview.classList.add('hidden');
+    defaultIcon.classList.remove('hidden');
+    tempAvatarBase64 = null;
+  }
+
   document.getElementById('authModal').classList.remove('hidden');
 }
 
@@ -457,31 +560,51 @@ function closeAuthModal() {
   document.getElementById('authModal').classList.add('hidden');
 }
 
+function previewGalleryImage(event) {
+  const file = event.target.files[0];
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      tempAvatarBase64 = e.target.result;
+      const avatarPreview = document.getElementById('avatarPreview');
+      const defaultIcon = document.getElementById('defaultAvatarIcon');
+      avatarPreview.src = tempAvatarBase64;
+      avatarPreview.classList.remove('hidden');
+      defaultIcon.classList.add('hidden');
+    };
+    reader.readAsDataURL(file);
+  }
+}
+
 function handleAuthSubmit(e) {
   e.preventDefault();
   const email = document.getElementById('userEmail').value;
   const phone = document.getElementById('userPhone').value;
   
+  const existingSession = getActiveSession() || {};
+  
   const newSession = {
     email: email,
     phone: phone,
+    avatar: tempAvatarBase64 || existingSession.avatar || null,
     loginTimestamp: new Date().getTime()
   };
   
   localStorage.setItem('poshella_session', JSON.stringify(newSession));
   closeAuthModal();
   updateProfileUI();
-  alert("Logged in successfully! Session active for 1 hour.");
+  alert("Profile saved successfully!");
 }
 
 function logoutUser() {
-  if (confirm("Do you want to log out of Poshella Cosmetics?")) {
+  if (confirm("Are you sure you want to log out?")) {
     localStorage.removeItem('poshella_session');
+    tempAvatarBase64 = null;
+    closeAuthModal();
     updateProfileUI();
   }
 }
 
-// Check session on load
 window.addEventListener('DOMContentLoaded', updateProfileUI);
 </script>
 
