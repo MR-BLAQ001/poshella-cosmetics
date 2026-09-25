@@ -1,7 +1,7 @@
 (function() {
   const VIEW_KEY = 'poshella_saved_page';
 
-  // 1. Get current cart array from localStorage safely
+  // Helper to read current cart array safely
   function getCart() {
     const raw = localStorage.getItem('cart') || localStorage.getItem('poshella_cart') || '[]';
     try {
@@ -12,7 +12,7 @@
     }
   }
 
-  // 2. Save cart array safely to all storage keys
+  // Helper to save cart array safely
   function saveCart(cart) {
     window.cart = cart;
     try {
@@ -21,7 +21,21 @@
     } catch(e) {}
   }
 
-  // 3. OVERWRITE addToCart to properly handle different product IDs separately
+  // Clear Cart with confirmation prompt
+  window.clearCart = function() {
+    const confirmClear = confirm("Are you sure you want to clear your cart?");
+    if (confirmClear) {
+      saveCart([]);
+      window.renderCartView();
+      if (typeof window.showToast === 'function') {
+        window.showToast("Cart cleared!");
+      } else if (typeof window.alert === 'function') {
+        window.alert("Cart cleared!");
+      }
+    }
+  };
+
+  // Add to cart with proper loose-matching product IDs
   window.addToCart = function(productId) {
     if (typeof window.productsDatabase === 'undefined' || !Array.isArray(window.productsDatabase)) {
       return;
@@ -31,8 +45,6 @@
     if (!prod) return;
 
     let currentCart = getCart();
-
-    // Match loose equality (==) so string vs number IDs match correctly
     const existingIndex = currentCart.findIndex(item => item.id == productId);
 
     if (existingIndex > -1) {
@@ -57,13 +69,12 @@
       window.renderCartView();
     }
 
-    // Custom toast notification
     if (typeof window.alert === 'function') {
       window.alert('Item added to cart!');
     }
   };
 
-  // 4. Master render function that displays each distinct product row
+  // Master render function
   window.renderCartView = function() {
     const container = document.getElementById('cartItemsContainer') || document.getElementById('cart-items');
     const summaryBox = document.getElementById('cartSummary') || document.querySelector('.cart-summary');
@@ -81,7 +92,17 @@
       subtotal += (price * qty);
     });
 
-    // Badges & Header
+    // Attach click handler to any "Clear All" button found on screen
+    document.querySelectorAll('.clear-all, [onclick*="clearCart"], button, a').forEach(el => {
+      if (el.textContent && el.textContent.trim().toLowerCase() === 'clear all') {
+        el.onclick = function(e) {
+          e.preventDefault();
+          window.clearCart();
+        };
+      }
+    });
+
+    // Badges & Header Title
     document.querySelectorAll('.cart-badge, [id*="cart-count"]').forEach(badge => {
       badge.textContent = totalUnits;
       badge.style.display = totalUnits > 0 ? 'inline-block' : 'none';
@@ -111,7 +132,7 @@
     if (summaryBox) summaryBox.style.display = 'block';
     if (timerBox) timerBox.style.display = 'flex';
 
-    // Render each distinct product line
+    // Render cart item rows
     let itemsHtml = '';
     cart.forEach((item, index) => {
       const qty = parseInt(item.qty || item.quantity || 1, 10);
@@ -137,7 +158,7 @@
 
     if (container) container.innerHTML = itemsHtml;
 
-    // Prices calculation
+    // Price calculations
     const delivery = subtotal > 0 ? 1500 : 0;
     const grandTotal = subtotal + delivery;
 
@@ -157,7 +178,7 @@
     });
   };
 
-  // Change quantity (+ / -)
+  // Adjust item quantity (+ / -)
   window.changeCartQty = function(index, delta) {
     let cart = getCart();
     if (cart[index]) {
@@ -172,7 +193,7 @@
     }
   };
 
-  // Intercept view switching
+  // Intercept view navigation
   if (typeof window.switchView === 'function') {
     const origSwitch = window.switchView;
     window.switchView = function(viewId) {
@@ -184,7 +205,7 @@
     };
   }
 
-  // Restore state on load
+  // Initialization on page load
   function init() {
     try {
       const savedView = localStorage.getItem(VIEW_KEY);
@@ -196,7 +217,7 @@
     window.renderCartView();
   }
 
-  // Alert replacement
+  // Soft toast replacement for alerts
   window.alert = function(msg) {
     let toast = document.getElementById('poshella-toast');
     if (!toast) {
@@ -205,7 +226,7 @@
       toast.style.cssText = 'position:fixed; bottom:75px; left:50%; transform:translateX(-50%); background:#ff2a75; color:#ffffff; padding:10px 22px; border-radius:25px; font-size:0.82rem; font-weight:bold; z-index:10000; box-shadow:0 4px 15px rgba(255, 42, 117, 0.4); text-align:center; transition:opacity 0.3s ease; opacity:0; pointer-events:none;';
       document.body.appendChild(toast);
     }
-    toast.textContent = msg || 'Item added to cart!';
+    toast.textContent = msg || 'Action complete!';
     toast.style.opacity = '1';
     setTimeout(() => { toast.style.opacity = '0'; }, 2000);
   };
