@@ -262,17 +262,17 @@
   <!-- CART & CHECKOUT PAGE VIEW -->
   
 <section id="categoriesView" class="view" style="display: none; padding-bottom: 70px;">
-  <div style="display: flex; height: calc(100vh - 120px); background: #121212;">
-    <div style="width: 35%; background: #1a1a1a; border-right: 1px solid #333; overflow-y: auto;">
-      <div class="cat-tab active" onclick="selectCategoryTab('makeup', this)" style="padding: 14px 10px; font-size: 0.85rem; font-weight: bold; cursor: pointer; border-left: 4px solid #ff2a75; background: #2a1f2d; color: #ff2a75;">MakeUp</div>
-      <div class="cat-tab" onclick="selectCategoryTab('skincare', this)" style="padding: 14px 10px; font-size: 0.85rem; font-weight: bold; cursor: pointer; border-left: 4px solid transparent; color: #ccc;">SkinCare</div>
-      <div class="cat-tab" onclick="selectCategoryTab('haircare', this)" style="padding: 14px 10px; font-size: 0.85rem; font-weight: bold; cursor: pointer; border-left: 4px solid transparent; color: #ccc;">HairCare</div>
-      <div class="cat-tab" onclick="selectCategoryTab('fragrance', this)" style="padding: 14px 10px; font-size: 0.85rem; font-weight: bold; cursor: pointer; border-left: 4px solid transparent; color: #ccc;">Fragrance</div>
-      <div class="cat-tab" onclick="selectCategoryTab('glowset', this)" style="padding: 14px 10px; font-size: 0.85rem; font-weight: bold; cursor: pointer; border-left: 4px solid transparent; color: #ccc;">Glow Set</div>
+  <div style="display: flex; height: calc(100vh - 120px); background: #f4f4f4;">
+    <div style="width: 32%; background: #fff; border-right: 1px solid #e0e0e0; overflow-y: auto;">
+      <div class="cat-tab active" onclick="selectCategoryTab('makeup', this)" style="padding: 14px 10px; font-size: 0.85rem; font-weight: bold; cursor: pointer; border-left: 4px solid #ff2a75; background: #fff0f5; color: #ff2a75;">MakeUp</div>
+      <div class="cat-tab" onclick="selectCategoryTab('skincare', this)" style="padding: 14px 10px; font-size: 0.85rem; font-weight: bold; cursor: pointer; border-left: 4px solid transparent; color: #333;">SkinCare</div>
+      <div class="cat-tab" onclick="selectCategoryTab('haircare', this)" style="padding: 14px 10px; font-size: 0.85rem; font-weight: bold; cursor: pointer; border-left: 4px solid transparent; color: #333;">HairCare</div>
+      <div class="cat-tab" onclick="selectCategoryTab('fragrance', this)" style="padding: 14px 10px; font-size: 0.85rem; font-weight: bold; cursor: pointer; border-left: 4px solid transparent; color: #333;">Fragrance</div>
+      <div class="cat-tab" onclick="selectCategoryTab('glowset', this)" style="padding: 14px 10px; font-size: 0.85rem; font-weight: bold; cursor: pointer; border-left: 4px solid transparent; color: #333;">Glow Set</div>
     </div>
 
-    <div style="width: 65%; padding: 12px; overflow-y: auto; background: #121212;">
-      <h4 id="catTitle" style="margin-top: 0; margin-bottom: 12px; font-size: 1rem; color: #fff;">MakeUp</h4>
+    <div style="width: 68%; padding: 12px; overflow-y: auto; background: #fff;">
+      <h4 id="catTitle" style="margin-top: 0; margin-bottom: 12px; font-size: 1rem; color: #222;">MakeUp</h4>
       <div id="catGrid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
       </div>
     </div>
@@ -840,15 +840,15 @@
     
 const categoryData = {
   makeup: [
-    { name: 'Lipstick', img: 'https://images.unsplash.com/photo-1586495777744-4413f21062fa?w=200' },
+    { name: 'Matte Lipstick', img: 'https://images.unsplash.com/photo-1586495777744-4413f21062fa?w=200' },
     { name: 'Foundation', img: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=200' },
-    { name: 'Eyeliner', img: 'https://images.unsplash.com/photo-1631214524020-7e18db9a8f92?w=200' },
-    { name: 'Blush', img: 'https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=200' }
+    { name: 'Eyeliner & Lash', img: 'https://images.unsplash.com/photo-1631214524020-7e18db9a8f92?w=200' },
+    { name: 'Blush & Glow', img: 'https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=200' }
   ],
   skincare: [
-    { name: 'Serums', img: 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=200' },
-    { name: 'Moisturizer', img: 'https://images.unsplash.com/photo-1608248597261-833245374139?w=200' },
-    { name: 'Cleanser', img: 'https://images.unsplash.com/photo-1556228720-195a672e8a03?w=200' },
+    { name: 'Facial Serums', img: 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=200' },
+    { name: 'Moisturizers', img: 'https://images.unsplash.com/photo-1608248597261-833245374139?w=200' },
+    { name: 'Cleansers', img: 'https://images.unsplash.com/photo-1556228720-195a672e8a03?w=200' },
     { name: 'Sunscreen', img: 'https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?w=200' }
   ],
   haircare: [
@@ -860,26 +860,30 @@ const categoryData = {
     { name: 'Body Mists', img: 'https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?w=200' }
   ],
   glowset: [
-    { name: 'Body Cream', img: 'https://images.unsplash.com/photo-1608248597261-833245374139?w=200' },
-    { name: 'Face Mask', img: 'https://images.unsplash.com/photo-1567928269937-ae146e45b428?w=200' }
+    { name: 'Glow Body Cream', img: 'https://images.unsplash.com/photo-1608248597261-833245374139?w=200' },
+    { name: 'Vitamin C Mask', img: 'https://images.unsplash.com/photo-1567928269937-ae146e45b428?w=200' }
   ]
 };
 
 function selectCategoryTab(key, el) {
   document.querySelectorAll('.cat-tab').forEach(t => {
     t.style.borderLeft = '4px solid transparent';
-    t.style.background = '#1a1a1a';
-    t.style.color = '#ccc';
+    t.style.background = '#fff';
+    t.style.color = '#333';
   });
   if (el) {
     el.style.borderLeft = '4px solid #ff2a75';
-    el.style.background = '#2a1f2d';
+    el.style.background = '#fff0f5';
     el.style.color = '#ff2a75';
   }
   const title = key.charAt(0).toUpperCase() + key.slice(1);
   document.getElementById('catTitle').textContent = title;
   const grid = document.getElementById('catGrid');
   grid.innerHTML = (categoryData[key] || []).map(item => ).join('');
+}
+
+function filterCategoryAndGoHome(catName) {
+  switchView('home');
 }
 
 function switchView(target) {
@@ -910,7 +914,6 @@ function switchView(target) {
 
       navHome.classList.remove('active');
       navCart.classList.remove('active');
-        if (navCategories) navCategories.classList.remove('active');
       navAccount.classList.remove('active');
         if (navCategories) navCategories.classList.remove('active');
 
@@ -925,10 +928,11 @@ function switchView(target) {
         detailsView.classList.add('active');
         mainBottomNav.style.display = 'none';
       } else if (target === 'categories') {
-        homeView.style.display = 'block';
+        const catView = document.getElementById('categoriesView');
+        if (catView) catView.style.display = 'block';
         if (navCategories) navCategories.classList.add('active');
         mainBottomNav.style.display = 'flex';
-        window.scrollTo({ top: 150, behavior: 'smooth' });
+        selectCategoryTab('makeup', document.querySelector('.cat-tab'));
     } else if (target === 'account') {
         accountView.classList.add('active');
         navAccount.classList.add('active');
@@ -945,13 +949,7 @@ function switchView(target) {
         helpView.classList.add('active');
         mainHeader.style.display = 'none';
         mainBottomNav.style.display = 'flex';
-      } else if (target === 'categories') {
-        const catView = document.getElementById('categoriesView');
-        if (catView) catView.style.display = 'block';
-        if (navCategories) navCategories.classList.add('active');
-        mainBottomNav.style.display = 'flex';
-        selectCategoryTab('makeup', document.querySelector('.cat-tab'));
-    } else {
+      } else {
         homeView.style.display = 'block';
         navHome.classList.add('active');
         mainBottomNav.style.display = 'flex';
