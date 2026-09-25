@@ -8,6 +8,12 @@
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
     body { background-color: #0e0e0e; color: #ffffff; padding-bottom: 75px; }
 
+    /* TOAST NOTIFICATION STYLING */
+    .toast-banner {
+      position: fixed; top: 0; left: 0; width: 100%; background: #2e7d32; color: #fff; padding: 12px 16px; font-size: 0.85rem; font-weight: bold; display: flex; justify-content: space-between; align-items: center; z-index: 10000; box-shadow: 0 4px 10px rgba(0,0,0,0.5); transition: transform 0.3s ease-in-out;
+    }
+    .toast-banner.hidden { display: none; }
+
     /* STICKY TOP HEADER */
     .sticky-header {
       position: sticky; top: 0; z-index: 1000; background: #121212; padding: 10px 14px; border-bottom: 1px solid #222;
@@ -59,11 +65,6 @@
     /* PRODUCT DETAILS PAGE VIEW */
     .details-page { display: none; background: #0e0e0e; }
     .details-page.active { display: block; }
-
-    .toast-banner {
-      background: #2e7d32; color: #fff; padding: 10px 14px; font-size: 0.8rem; font-weight: bold; display: flex; justify-content: space-between; align-items: center; transition: all 0.3s ease;
-    }
-    .toast-banner.hidden { display: none; }
 
     .product-detail-img { width: 100%; max-height: 320px; object-fit: cover; background: #181818; display: block; }
     
@@ -125,9 +126,16 @@
     .auth-modal input { width: 100%; padding: 10px; margin: 5px 0 10px; border-radius: 6px; border: 1px solid #333; background: #222; color: #fff; font-size: 0.85rem; box-sizing: border-box; }
     .auth-modal button.submit-btn { width: 100%; padding: 10px; background: #ff2a75; border: none; border-radius: 6px; color: #fff; font-weight: bold; cursor: pointer; margin-top: 5px; }
     .close-modal { position: absolute; top: 10px; right: 14px; background: none; border: none; color: #888; font-size: 1.4rem; cursor: pointer; }
+    .auth-error { color: #ff2a75; font-size: 0.75rem; margin-bottom: 8px; display: none; }
   </style>
 </head>
 <body>
+
+  <!-- GLOBAL TOAST NOTIFICATION BANNER -->
+  <div id="toastBanner" class="toast-banner hidden">
+    <span id="toastMessage">✓ Cart successfully updated</span>
+    <span style="cursor:pointer;" onclick="closeToast()">✕</span>
+  </div>
 
   <!-- STICKY HEADER WITH SEARCH -->
   <header class="sticky-header">
@@ -163,18 +171,13 @@
         <span id="countdown">14h : 40m : 49s</span>
       </div>
       <div class="product-grid" id="mainProductGrid">
-        <!-- Rendered dynamically via JS -->
+        <!-- Rendered dynamically -->
       </div>
     </div>
   </main>
 
   <!-- PRODUCT DETAILS VIEW PAGE -->
   <section id="detailsView" class="details-page">
-    <div id="toastBanner" class="toast-banner hidden">
-      <span>✓ Cart successfully updated</span>
-      <span style="cursor:pointer;" onclick="closeToast()">✕</span>
-    </div>
-
     <img id="detailImg" src="" class="product-detail-img" alt="Product Image">
 
     <div class="p-detail-content">
@@ -199,7 +202,7 @@
       <div class="promo-item">🚚 Enjoy cheaper shipping fees when ordering set items</div>
     </div>
 
-    <!-- SIMILAR PRODUCTS SECTION BELOW PRODUCT DETAILS -->
+    <!-- SIMILAR PRODUCTS SECTION -->
     <div class="similar-products-section">
       <div class="similar-title">Similar Products You May Like</div>
       <div class="product-grid" id="similarProductGrid">
@@ -271,6 +274,8 @@
       <button class="close-modal" onclick="closeAuthModal()">&times;</button>
       <h3 id="modalTitle">Login to Account</h3>
       
+      <div id="authErrorMsg" class="auth-error"></div>
+
       <form id="authForm" onsubmit="handleAuthSubmit(event)" style="text-align: left;">
         <div id="usernameGroup" class="hidden">
           <label style="font-size: 0.7rem; color: #aaa;">Username</label>
@@ -301,7 +306,7 @@
   <script>
     const SESSION_MS = 60 * 60 * 1000;
     let cartCount = 0;
-    let currentSelectedProduct = null;
+    let toastTimeout = null;
 
     const productsDatabase = [
       { id: 1, name: "Glow Body Cream - 250ml", price: 5000, img: "https://images.unsplash.com/photo-1556228720-195a672e8a03?w=500" },
@@ -311,6 +316,19 @@
       { id: 5, name: "Luxury Organic Face Oil", price: 9000, img: "https://images.unsplash.com/photo-1608248597260-6521e847c295?w=500" },
       { id: 6, name: "Gentle Cleansing Gel 200ml", price: 4500, img: "https://images.unsplash.com/photo-1556228720-195a672e8a03?w=500" }
     ];
+
+    function showToast(message) {
+      const toast = document.getElementById('toastBanner');
+      const msgSpan = document.getElementById('toastMessage');
+      
+      msgSpan.textContent = message || "✓ Cart successfully updated";
+      toast.classList.remove('hidden');
+
+      if (toastTimeout) clearTimeout(toastTimeout);
+      toastTimeout = setTimeout(() => { toast.classList.add('hidden'); }, 3000);
+    }
+
+    function closeToast() { document.getElementById('toastBanner').classList.add('hidden'); }
 
     function renderMainGrid() {
       const grid = document.getElementById('mainProductGrid');
@@ -330,14 +348,11 @@
       const prod = productsDatabase.find(p => p.id === productId);
       if (!prod) return;
 
-      currentSelectedProduct = prod;
-
       document.getElementById('detailImg').src = prod.img;
       document.getElementById('detailTitle').textContent = prod.name;
       document.getElementById('detailPrice').textContent = `₦${prod.price.toLocaleString()}`;
       document.getElementById('detailAddToCartBtn').onclick = () => addToCart(prod.name);
 
-      // Filter similar products (excluding the current one)
       const similarProducts = productsDatabase.filter(p => p.id !== productId);
       const similarGrid = document.getElementById('similarProductGrid');
 
@@ -359,16 +374,8 @@
     function addToCart(name) {
       cartCount++;
       document.getElementById('cartBadge').textContent = cartCount;
-      showToast();
+      showToast("✓ Cart successfully updated");
     }
-
-    function showToast() {
-      const toast = document.getElementById('toastBanner');
-      toast.classList.remove('hidden');
-      setTimeout(() => { toast.classList.add('hidden'); }, 3000);
-    }
-
-    function closeToast() { document.getElementById('toastBanner').classList.add('hidden'); }
 
     function switchView(target) {
       const homeView = document.getElementById('homeView');
@@ -382,7 +389,7 @@
 
       if (target === 'details') {
         detailsView.classList.add('active');
-        mainBottomNav.style.display = 'none'; // Hide general nav for detail page's action bar
+        mainBottomNav.style.display = 'none';
       } else if (target === 'account') {
         accountView.classList.add('active');
         mainBottomNav.style.display = 'flex';
@@ -392,7 +399,15 @@
       }
     }
 
-    function openCart() { alert(`Cart has ${cartCount} items.`); }
+    function openCart() {
+      showToast(`Cart updated (${cartCount} items inside)`);
+    }
+
+    function handleLogoutClick() {
+      localStorage.removeItem('poshella_session');
+      showToast("Logged out successfully");
+      switchView('home');
+    }
 
     window.addEventListener('DOMContentLoaded', () => {
       renderMainGrid();
