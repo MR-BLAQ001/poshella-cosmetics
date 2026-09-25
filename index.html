@@ -146,6 +146,29 @@
     .menu-item-left { display: flex; align-items: center; gap: 12px; }
 
     
+    
+    /* HELP CENTER & BOT STYLES */
+    .help-center-page { display: none; background: #0e0e0e; min-height: 85vh; padding: 0 0 20px 0; }
+    .help-center-page.active { display: block; }
+    .help-hero-banner { background: linear-gradient(135deg, #ff2a75, #b3124d); color: #fff; text-align: center; padding: 25px 15px; font-weight: 800; font-size: 1.6rem; letter-spacing: 1px; text-transform: uppercase; }
+    .help-content-card { background: #141414; border: 1px solid #222; border-radius: 12px; margin: 15px; padding: 18px; color: #ccc; font-size: 0.85rem; line-height: 1.5; }
+    .help-content-card h3 { color: #fff; font-size: 1rem; margin-bottom: 8px; font-weight: 700; }
+    .help-btn-group { display: flex; gap: 10px; margin-top: 15px; }
+    .btn-help-action { flex: 1; background: #ff2a75; color: #fff; text-align: center; padding: 12px; border-radius: 8px; font-weight: bold; font-size: 0.85rem; border: none; cursor: pointer; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 6px; }
+    .btn-help-action.outline { background: transparent; border: 1px solid #ff2a75; color: #ff2a75; }
+
+    /* Interactive Chat Bot Section */
+    .bot-chat-container { background: #121212; border: 1px solid #262626; border-radius: 12px; margin: 15px; overflow: hidden; display: flex; flex-direction: column; height: 380px; }
+    .bot-chat-header { background: #1a1a1a; padding: 12px 15px; border-bottom: 1px solid #262626; display: flex; align-items: center; gap: 10px; }
+    .bot-status-dot { width: 9px; height: 9px; background: #22c55e; border-radius: 50%; }
+    .bot-chat-messages { flex: 1; padding: 12px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+    .chat-msg { max-width: 80%; padding: 10px 14px; border-radius: 12px; font-size: 0.82rem; line-height: 1.4; word-wrap: break-word; }
+    .chat-msg.bot { background: #222; color: #eee; border-bottom-left-radius: 2px; align-self: flex-start; }
+    .chat-msg.user { background: #ff2a75; color: #fff; border-bottom-right-radius: 2px; align-self: flex-end; }
+    .bot-chat-input-area { padding: 10px; background: #181818; border-top: 1px solid #262626; display: flex; gap: 8px; }
+    .bot-chat-input-area input { flex: 1; background: #0e0e0e; border: 1px solid #2a2a2a; border-radius: 20px; padding: 8px 14px; color: #fff; font-size: 0.82rem; outline: none; }
+    .bot-chat-input-area button { background: #ff2a75; color: #fff; border: none; border-radius: 50%; width: 36px; height: 36px; font-size: 0.9rem; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+
     /* CHECKOUT PAGE VIEW */
     .checkout-page { display: none; background: #0e0e0e; padding: 14px; min-height: 85vh; }
     .checkout-page.active { display: block; }
@@ -344,6 +367,54 @@
   </section>
 
   
+  
+  <!-- HELP CENTER VIEW -->
+  <section id="helpCenterView" class="help-center-page">
+    <div class="subpage-header">
+      <span class="back-btn" onclick="switchView('account')">←</span>
+      <span class="header-title">Help Center</span>
+    </div>
+
+    <div class="help-hero-banner">
+      NEED HELP?
+    </div>
+
+    <div class="help-content-card">
+      <h3>Customer Support & Inquiries</h3>
+      <p>If you have inquiries or need assistance with your orders, feel free to chat with Poshella Help Center bot below.</p>
+      <p style="margin-top: 8px;"><strong>Support Hours:</strong><br>
+      Monday - Friday: 8:00 AM – 6:00 PM<br>
+      Weekends & Holidays: 9:00 AM – 3:00 PM</p>
+
+      <div class="help-btn-group">
+        <a href="tel:08108778753" class="btn-help-action outline">📞 CALL US</a>
+        <button class="btn-help-action" onclick="document.getElementById('botUserInput').focus()">💬 LIVE BOT CHAT</button>
+      </div>
+    </div>
+
+    <!-- Bot Interface -->
+    <div class="bot-chat-container">
+      <div class="bot-chat-header">
+        <div class="bot-status-dot"></div>
+        <div>
+          <div style="font-size:0.85rem; font-weight:bold; color:#fff;">Poshella Help Center</div>
+          <div style="font-size:0.7rem; color:#888;">Online • Automated Support Bot</div>
+        </div>
+      </div>
+
+      <div class="bot-chat-messages" id="botChatBox">
+        <div class="chat-msg bot">
+          Hello! 👋 Welcome to Poshella Help Center. How can I assist you with your cosmetics order or request today?
+        </div>
+      </div>
+
+      <div class="bot-chat-input-area">
+        <input type="text" id="botUserInput" placeholder="Type your issue or question..." onkeypress="handleBotKeyPress(event)">
+        <button onclick="sendBotMessage()">➤</button>
+      </div>
+    </div>
+  </section>
+
   <!-- CHECKOUT PAGE VIEW -->
   <section id="checkoutView" class="checkout-page">
     <div class="subpage-header" style="margin: -14px -14px 14px -14px;">
@@ -708,6 +779,45 @@
     }
 
 
+    
+    function sendBotMessage() {
+      const inputEl = document.getElementById('botUserInput');
+      const text = inputEl.value.trim();
+      if (!text) return;
+
+      const chatBox = document.getElementById('botChatBox');
+
+      // User Message
+      const userMsgDiv = document.createElement('div');
+      userMsgDiv.className = 'chat-msg user';
+      userMsgDiv.textContent = text;
+      chatBox.appendChild(userMsgDiv);
+
+      inputEl.value = '';
+      chatBox.scrollTop = chatBox.scrollHeight;
+
+      // Bot Processing Response
+      setTimeout(() => {
+        const botMsgDiv = document.createElement('div');
+        botMsgDiv.className = 'chat-msg bot';
+        botMsgDiv.innerHTML = `I have recorded your request: <i>"${text}"</i>.<br><br>I am now forwarding your issue directly to our WhatsApp support team at <b>08108778753</b> so an agent can assist you immediately!`;
+        chatBox.appendChild(botMsgDiv);
+        chatBox.scrollTop = chatBox.scrollHeight;
+
+        // Auto-redirect to WhatsApp number 08108778753 after short delay
+        setTimeout(() => {
+          const encodedMsg = encodeURIComponent(`Hello Poshella Support, I need assistance with: ${text}`);
+          window.location.href = `https://wa.me/2348108778753?text=${encodedMsg}`;
+        }, 1800);
+      }, 700);
+    }
+
+    function handleBotKeyPress(e) {
+      if (e.key === 'Enter') {
+        sendBotMessage();
+      }
+    }
+
     function switchView(target) {
       const homeView = document.getElementById('homeView');
       const accountView = document.getElementById('accountView');
@@ -715,6 +825,7 @@
       const cartView = document.getElementById('cartView');
       const helpView = document.getElementById('helpView');
       const checkoutView = document.getElementById('checkoutView');
+      const helpCenterView = document.getElementById('helpCenterView');
       const mainHeader = document.getElementById('mainHeader');
       const mainBottomNav = document.getElementById('mainBottomNav');
 
@@ -728,6 +839,7 @@
       cartView.classList.remove('active');
       helpView.classList.remove('active');
       checkoutView.classList.remove('active');
+      if(helpCenterView) helpCenterView.classList.remove('active');
 
       navHome.classList.remove('active');
       navCart.classList.remove('active');
@@ -751,7 +863,11 @@
         checkoutView.classList.add('active');
         mainHeader.style.display = 'none';
         mainBottomNav.style.display = 'flex';
-      } else if (target === 'help') {
+      } else if (target === 'help' || target === 'contact') {
+        if(helpCenterView) helpCenterView.classList.add('active');
+        mainHeader.style.display = 'none';
+        mainBottomNav.style.display = 'flex';
+      } else if (target === 'help_old') {
         helpView.classList.add('active');
         mainHeader.style.display = 'none';
         mainBottomNav.style.display = 'flex';
