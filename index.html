@@ -832,6 +832,7 @@
       const navHome = document.getElementById('navHome');
       const navCart = document.getElementById('navCart');
       const navAccount = document.getElementById('navAccount');
+        const navCategories = document.getElementById('navCategories');
 
       homeView.style.display = 'none';
       accountView.classList.remove('active');
@@ -844,6 +845,7 @@
       navHome.classList.remove('active');
       navCart.classList.remove('active');
       navAccount.classList.remove('active');
+        if (navCategories) navCategories.classList.remove('active');
 
       mainHeader.style.display = 'block';
 
@@ -855,7 +857,12 @@
       } else if (target === 'details') {
         detailsView.classList.add('active');
         mainBottomNav.style.display = 'none';
-      } else if (target === 'account') {
+      } else if (target === 'categories') {
+        homeView.style.display = 'block';
+        if (navCategories) navCategories.classList.add('active');
+        mainBottomNav.style.display = 'flex';
+        window.scrollTo({ top: 150, behavior: 'smooth' });
+    } else if (target === 'account') {
         accountView.classList.add('active');
         navAccount.classList.add('active');
         mainBottomNav.style.display = 'flex';
