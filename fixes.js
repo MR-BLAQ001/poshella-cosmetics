@@ -112,3 +112,32 @@
     syncCartUI();
   }
 })();
+
+// --- HIDE GREEN ALERT BANNER ---
+(function() {
+  // Inject CSS to instantly hide green alert banners
+  const style = document.createElement('style');
+  style.textContent = `
+    .alert-success, .cart-alert, [class*="alert-green"], [style*="background-color: green"], [style*="background: green"], [style*="background: rgb(40, 167, 69)"], [style*="background:#28a745"] {
+      display: none !important;
+      visibility: hidden !important;
+      height: 0 !important;
+      padding: 0 !important;
+      margin: 0 !important;
+    }
+  `;
+  document.head.appendChild(style);
+
+  // Monitor DOM and remove banner elements if injected dynamically
+  const observer = new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
+      mutation.addedNodes.forEach((node) => {
+        if (node.nodeType === 1 && (node.textContent.includes('Cart successfully updated') || node.classList.contains('alert-success'))) {
+          node.remove();
+        }
+      });
+    });
+  });
+
+  observer.observe(document.body, { childList: true, subtree: true });
+})();
