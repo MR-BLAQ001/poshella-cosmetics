@@ -76,13 +76,89 @@
         .checkout-form input:focus, .checkout-form textarea:focus { border-color: #ff4081; }
         .cart-total { display: flex; justify-content: space-between; font-weight: bold; font-size: 18px; margin-bottom: 15px; }
         .pay-btn { background: #00c853; color: #fff; border: none; padding: 12px; width: 100%; border-radius: 5px; font-weight: bold; font-size: 16px; cursor: pointer; text-align: center; }
-    </style>
+    
+/* Auth Header & Modal Styles */
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.auth-btn {
+  background: #ff2a75;
+  color: #fff;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 20px;
+  font-weight: bold;
+  cursor: pointer;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.auth-btn:hover { opacity: 0.9; }
+
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(0,0,0,0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+.modal-overlay.hidden { display: none; }
+.auth-modal {
+  background: #1e1e1e;
+  color: #fff;
+  padding: 20px;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 340px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+  position: relative;
+  border: 1px solid #333;
+}
+.auth-modal h3 { color: #ff2a75; margin-top: 0; text-align: center; }
+.auth-modal input {
+  width: 100%;
+  padding: 10px;
+  margin: 8px 0 16px;
+  border-radius: 6px;
+  border: 1px solid #444;
+  background: #2a2a2a;
+  color: #fff;
+  box-sizing: border-box;
+}
+.auth-modal button.submit-btn {
+  width: 100%;
+  padding: 10px;
+  background: #ff2a75;
+  border: none;
+  border-radius: 6px;
+  color: #fff;
+  font-weight: bold;
+  cursor: pointer;
+}
+.close-modal {
+  position: absolute;
+  top: 10px; right: 15px;
+  background: none; border: none;
+  color: #aaa; font-size: 1.4rem; cursor: pointer;
+}
+
+</style>
 </head>
 <body>
 
     <header>
         <h1>POSHELLA COSMETICS</h1>
-        <button class="cart-icon-btn" onclick="toggleCart()">🛒 Cart <span class="cart-count" id="cart-count">0</span></button>
+        
+    <div class="header-actions">
+      <button id="profileBtn" class="auth-btn" onclick="openAuthModal()">👤 Login</button>
+      <button class="cart-icon-btn" onclick="toggleCart()">🛒 Cart <span class="cart-count" id="cart-count">0</span></button>
+    </div>
+    
     </header>
 
     <section class="hero">
@@ -325,6 +401,89 @@
         // Initialize cart loading immediately
         loadSavedCart();
     </script>
+
+
+<!-- AUTH MODAL -->
+<div id="authModal" class="modal-overlay hidden">
+  <div class="auth-modal">
+    <button class="close-modal" onclick="closeAuthModal()">&times;</button>
+    <h3 id="modalTitle">Account Login</h3>
+    <form id="authForm" onsubmit="handleAuthSubmit(event)">
+      <label style="font-size: 0.8rem;">Email Address</label>
+      <input type="email" id="userEmail" placeholder="yourname@gmail.com" required>
+      <label style="font-size: 0.8rem;">Phone Number</label>
+      <input type="tel" id="userPhone" placeholder="08012345678" required>
+      <button type="submit" class="submit-btn">Login & Continue</button>
+    </form>
+  </div>
+</div>
+
+
+<script>
+const SESSION_MS = 60 * 60 * 1000; // 1 hour session
+
+function getActiveSession() {
+  const session = JSON.parse(localStorage.getItem('poshella_session'));
+  if (!session) return null;
+  const now = new Date().getTime();
+  if (now - session.loginTimestamp < SESSION_MS) {
+    return session;
+  } else {
+    localStorage.removeItem('poshella_session');
+    return null;
+  }
+}
+
+function updateProfileUI() {
+  const session = getActiveSession();
+  const profileBtn = document.getElementById('profileBtn');
+  if (!profileBtn) return;
+  
+  if (session) {
+    const shortEmail = session.email.split('@')[0];
+    profileBtn.innerHTML = `👤 ${shortEmail}`;
+    profileBtn.onclick = logoutUser;
+  } else {
+    profileBtn.innerHTML = `👤 Login`;
+    profileBtn.onclick = openAuthModal;
+  }
+}
+
+function openAuthModal() {
+  document.getElementById('authModal').classList.remove('hidden');
+}
+
+function closeAuthModal() {
+  document.getElementById('authModal').classList.add('hidden');
+}
+
+function handleAuthSubmit(e) {
+  e.preventDefault();
+  const email = document.getElementById('userEmail').value;
+  const phone = document.getElementById('userPhone').value;
+  
+  const newSession = {
+    email: email,
+    phone: phone,
+    loginTimestamp: new Date().getTime()
+  };
+  
+  localStorage.setItem('poshella_session', JSON.stringify(newSession));
+  closeAuthModal();
+  updateProfileUI();
+  alert("Logged in successfully! Session active for 1 hour.");
+}
+
+function logoutUser() {
+  if (confirm("Do you want to log out of Poshella Cosmetics?")) {
+    localStorage.removeItem('poshella_session');
+    updateProfileUI();
+  }
+}
+
+// Check session on load
+window.addEventListener('DOMContentLoaded', updateProfileUI);
+</script>
 
 </body>
 </html>
