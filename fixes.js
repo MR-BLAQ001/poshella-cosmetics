@@ -1,50 +1,66 @@
 (function() {
   const VIEW_KEY = 'poshella_saved_page';
 
-  // 1. Core function to force load localStorage into cart array before rendering
-  function syncAndRenderCart() {
+  // Helper to ensure window.cart is always synchronized with localStorage
+  function syncGlobalCart() {
     const rawCart = localStorage.getItem('poshella_cart') || localStorage.getItem('cart') || '[]';
     try {
       const parsedCart = JSON.parse(rawCart);
       if (Array.isArray(parsedCart)) {
-        // Sync global cart variable in index.html if present
-        if (typeof window.cart !== 'undefined') {
-          window.cart = parsedCart;
-        }
+        window.cart = parsedCart;
       }
-    } catch(e) {}
-
-    if (typeof window.renderCartView === 'function') {
-      window.renderCartView();
+    } catch(e) {
+      window.cart = window.cart || [];
     }
   }
 
-  // 2. Intercept switchView to run syncAndRenderCart
-  if (typeof window.switchView === 'function' && !window._wrapped) {
-    const origSwitch = window.switchView;
-    window.switchView = function(viewId) {
-      try { localStorage.setItem(VIEW_KEY, viewId); } catch(e) {}
-      origSwitch(viewId);
-      if (viewId === 'cart' || viewId === 'cart-view') {
-        syncAndRenderCart();
-      }
-    };
-    window._wrapped = true;
+  // 1. MONKEY-PATCH renderCartView: Force cart sync EVERY TIME renderCartView is called
+  function patchRenderCartView() {
+    if (typeof window.renderCartView === 'function' && !window._renderCartViewPatched) {
+      const originalRender = window.renderCartView;
+      window.renderCartView = function() {
+        syncGlobalCart();
+        originalRender.apply(this, arguments);
+      };
+      window._renderCartViewPatched = true;
+    }
   }
 
-  // 3. Page load initialization
-  function initApp() {
-    syncAndRenderCart();
+  // 2. Intercept switchView
+  function patchSwitchView() {
+    if (typeof window.switchView === 'function' && !window._switchViewPatched) {
+      const origSwitch = window.switchView;
+      window.switchView = function(viewId) {
+        try { localStorage.setItem(VIEW_KEY, viewId); } catch(e) {}
+        origSwitch(viewId);
+        if (viewId === 'cart' || viewId === 'cart-view') {
+          syncGlobalCart();
+          if (typeof window.renderCartView === 'function') {
+            window.renderCartView();
+          }
+        }
+      };
+      window._switchViewPatched = true;
+    }
+  }
+
+  // 3. Initialize immediately and restore active tab on refresh
+  function init() {
+    syncGlobalCart();
+    patchRenderCartView();
+    patchSwitchView();
 
     try {
       const savedView = localStorage.getItem(VIEW_KEY);
       if (savedView && typeof window.switchView === 'function') {
         window.switchView(savedView);
-        if (savedView === 'cart' || savedView === 'cart-view') {
-          syncAndRenderCart();
-        }
       }
     } catch(e) {}
+
+    // Force one clean render after patches are applied
+    if (typeof window.renderCartView === 'function') {
+      window.renderCartView();
+    }
   }
 
   // 4. Toast alert replacement
@@ -61,9 +77,8 @@
     setTimeout(() => { toast.style.opacity = '0'; }, 2000);
   };
 
+  init();
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initApp);
-  } else {
-    initApp();
+    document.addEventListener('DOMContentLoaded', init);
   }
 })();
