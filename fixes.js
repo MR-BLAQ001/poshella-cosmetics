@@ -1,13 +1,13 @@
 (function() {
   const VIEW_KEY = 'poshella_saved_page';
 
-  // OVERWRITE the old renderCartView function in browser memory
+  // OVERWRITE renderCartView with accurate calculations & controls
   window.renderCartView = function() {
     const container = document.getElementById('cartItemsContainer') || document.getElementById('cart-items');
     const summaryBox = document.getElementById('cartSummary') || document.querySelector('.cart-summary');
     const timerBox = document.getElementById('cartTimer');
 
-    // 1. Pull latest items from localStorage
+    // Load cart
     const rawCart = localStorage.getItem('poshella_cart') || localStorage.getItem('cart') || '[]';
     let cart = [];
     try {
@@ -17,12 +17,29 @@
     }
     window.cart = cart;
 
-    // 2. Update badge count if helper exists
-    if (typeof window.updateCartBadge === 'function') {
-      window.updateCartBadge();
-    }
+    let totalUnits = 0;
+    let subtotal = 0;
 
-    // 3. If empty, render empty state
+    cart.forEach(item => {
+      const qty = parseInt(item.quantity || item.qty || 1, 10);
+      const price = parseFloat(item.price || item.unitPrice || 0);
+      totalUnits += qty;
+      subtotal += (price * qty);
+    });
+
+    // Update Header Title and Badges
+    document.querySelectorAll('.view-title, header h2, .cart-header-title').forEach(el => {
+      if (el.textContent.includes('Shopping Cart')) {
+        el.textContent = `Shopping Cart (${totalUnits})`;
+      }
+    });
+
+    document.querySelectorAll('.cart-badge, [id*="cart-count"]').forEach(badge => {
+      badge.textContent = totalUnits;
+      badge.style.display = totalUnits > 0 ? 'inline-block' : 'none';
+    });
+
+    // Handle Empty State
     if (!Array.isArray(cart) || cart.length === 0) {
       if (container) {
         container.innerHTML = `
@@ -37,46 +54,75 @@
       return;
     }
 
-    // 4. If items exist, force display of items
     if (summaryBox) summaryBox.style.display = 'block';
     if (timerBox) timerBox.style.display = 'flex';
 
+    // Build Item List
     let itemsHtml = '';
-    let subtotal = 0;
-
-    cart.forEach((item) => {
+    cart.forEach((item, index) => {
       const qty = parseInt(item.quantity || item.qty || 1, 10);
       const price = parseFloat(item.price || item.unitPrice || 0);
-      const itemTotal = price * qty;
-      subtotal += itemTotal;
 
       itemsHtml += `
         <div class="cart-item" style="display:flex; align-items:center; gap:12px; background:#181818; padding:12px; border-radius:10px; margin-bottom:10px; border:1px solid #282828;">
-          <img src="${item.image || item.img || ''}" style="width:60px; height:60px; object-fit:cover; border-radius:8px;" onerror="this.style.display='none'">
+          <img src="${item.image || item.img || ''}" style="width:55px; height:55px; object-fit:cover; border-radius:8px;" onerror="this.style.display='none'">
           <div style="flex:1;">
             <h4 style="margin:0 0 4px 0; color:#fff; font-size:0.95rem;">${item.name || item.title || 'Product'}</h4>
             <p style="margin:0; color:#ff2a75; font-weight:bold; font-size:0.9rem;">₦${price.toLocaleString()}</p>
           </div>
-          <div style="display:flex; align-items:center; gap:8px;">
-            <span style="color:#fff; font-weight:bold; font-size:0.9rem;">Qty: ${qty}</span>
+          <div style="display:flex; align-items:center; gap:8px; background:#222; padding:4px 8px; border-radius:6px;">
+            <button onclick="window.changeCartQty(${index}, -1)" style="background:none; border:none; color:#ff2a75; font-size:1.1rem; font-weight:bold; cursor:pointer; padding:0 4px;">-</button>
+            <span style="color:#fff; font-weight:bold; font-size:0.9rem; min-width:18px; text-align:center;">${qty}</span>
+            <button onclick="window.changeCartQty(${index}, 1)" style="background:none; border:none; color:#ff2a75; font-size:1.1rem; font-weight:bold; cursor:pointer; padding:0 4px;">+</button>
           </div>
         </div>
       `;
     });
 
-    if (container) {
-      container.innerHTML = itemsHtml;
-    }
+    if (container) container.innerHTML = itemsHtml;
 
-    // Update prices
-    const delivery = 1500;
+    // Calculate Prices Correctly
+    const delivery = subtotal > 0 ? 1500 : 0;
     const grandTotal = subtotal + delivery;
 
-    const subtotalEl = document.getElementById('cartSubtotal');
-    const totalEl = document.getElementById('cartTotal');
+    // Direct DOM text replacements for pricing fields
+    document.querySelectorAll('*').forEach(el => {
+      if (el.children.length === 0) {
+        const text = el.textContent.trim();
+        if (text === 'Subtotal' && el.nextElementSibling) {
+          el.nextElementSibling.textContent = `₦${subtotal.toLocaleString()}`;
+        }
+        if (text === 'Estimated Delivery' && el.nextElementSibling) {
+          el.nextElementSibling.textContent = `₦${delivery.toLocaleString()}`;
+        }
+        if (text === 'Total' && el.nextElementSibling) {
+          el.nextElementSibling.textContent = `₦${grandTotal.toLocaleString()}`;
+        }
+      }
+    });
+  };
 
-    if (subtotalEl) subtotalEl.textContent = `₦${subtotal.toLocaleString()}`;
-    if (totalEl) totalEl.textContent = `₦${grandTotal.toLocaleString()}`;
+  // Function to adjust item quantity (+ / -)
+  window.changeCartQty = function(index, delta) {
+    const rawCart = localStorage.getItem('poshella_cart') || localStorage.getItem('cart') || '[]';
+    let cart = [];
+    try { cart = JSON.parse(rawCart); } catch(e) { cart = []; }
+
+    if (cart[index]) {
+      let currentQty = parseInt(cart[index].quantity || cart[index].qty || 1, 10);
+      currentQty += delta;
+
+      if (currentQty <= 0) {
+        cart.splice(index, 1);
+      } else {
+        if (cart[index].quantity !== undefined) cart[index].quantity = currentQty;
+        if (cart[index].qty !== undefined) cart[index].qty = currentQty;
+      }
+
+      localStorage.setItem('poshella_cart', JSON.stringify(cart));
+      localStorage.setItem('cart', JSON.stringify(cart));
+      window.renderCartView();
+    }
   };
 
   // Intercept view navigation
@@ -91,8 +137,8 @@
     };
   }
 
-  // Restore active view on refresh and fire new renderCartView
-  function initOnLoad() {
+  // Restore state on page load
+  function init() {
     try {
       const savedView = localStorage.getItem(VIEW_KEY);
       if (savedView && typeof window.switchView === 'function') {
@@ -103,7 +149,7 @@
     window.renderCartView();
   }
 
-  // Toast notification system replacing harsh alerts
+  // Replace alert popups with toast
   window.alert = function(msg) {
     let toast = document.getElementById('poshella-toast');
     if (!toast) {
@@ -118,8 +164,8 @@
   };
 
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initOnLoad);
+    document.addEventListener('DOMContentLoaded', init);
   } else {
-    initOnLoad();
+    init();
   }
 })();
