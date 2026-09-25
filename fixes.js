@@ -1,33 +1,75 @@
 (function() {
   const VIEW_KEY = 'poshella_saved_page';
 
-  // 1. Sync global cart variable and storage keys
-  function syncCartState() {
-    let currentCart = [];
-    if (Array.isArray(window.cart)) {
-      currentCart = window.cart;
-    } else {
-      const raw = localStorage.getItem('cart') || localStorage.getItem('poshella_cart') || '[]';
-      try { currentCart = JSON.parse(raw); } catch(e) { currentCart = []; }
-      window.cart = currentCart;
-    }
-
-    // Keep storage keys mirrored
+  // 1. Get current cart array from localStorage safely
+  function getCart() {
+    const raw = localStorage.getItem('cart') || localStorage.getItem('poshella_cart') || '[]';
     try {
-      localStorage.setItem('cart', JSON.stringify(currentCart));
-      localStorage.setItem('poshella_cart', JSON.stringify(currentCart));
-    } catch(e) {}
-
-    return currentCart;
+      const parsed = JSON.parse(raw);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch(e) {
+      return [];
+    }
   }
 
-  // 2. Overwrite renderCartView to calculate math and display all items accurately
+  // 2. Save cart array safely to all storage keys
+  function saveCart(cart) {
+    window.cart = cart;
+    try {
+      localStorage.setItem('cart', JSON.stringify(cart));
+      localStorage.setItem('poshella_cart', JSON.stringify(cart));
+    } catch(e) {}
+  }
+
+  // 3. OVERWRITE addToCart to properly handle different product IDs separately
+  window.addToCart = function(productId) {
+    if (typeof window.productsDatabase === 'undefined' || !Array.isArray(window.productsDatabase)) {
+      return;
+    }
+
+    const prod = window.productsDatabase.find(p => p.id == productId);
+    if (!prod) return;
+
+    let currentCart = getCart();
+
+    // Match loose equality (==) so string vs number IDs match correctly
+    const existingIndex = currentCart.findIndex(item => item.id == productId);
+
+    if (existingIndex > -1) {
+      currentCart[existingIndex].qty = (parseInt(currentCart[existingIndex].qty || 1, 10)) + 1;
+    } else {
+      currentCart.push({
+        id: prod.id,
+        name: prod.name || prod.title || 'Product',
+        price: parseFloat(prod.price || 0),
+        img: prod.img || prod.image || '',
+        qty: 1
+      });
+    }
+
+    saveCart(currentCart);
+
+    if (typeof window.updateCartBadge === 'function') {
+      window.updateCartBadge();
+    }
+
+    if (typeof window.renderCartView === 'function') {
+      window.renderCartView();
+    }
+
+    // Custom toast notification
+    if (typeof window.alert === 'function') {
+      window.alert('Item added to cart!');
+    }
+  };
+
+  // 4. Master render function that displays each distinct product row
   window.renderCartView = function() {
     const container = document.getElementById('cartItemsContainer') || document.getElementById('cart-items');
     const summaryBox = document.getElementById('cartSummary') || document.querySelector('.cart-summary');
     const timerBox = document.getElementById('cartTimer');
 
-    const cart = syncCartState();
+    const cart = getCart();
 
     let totalUnits = 0;
     let subtotal = 0;
@@ -39,7 +81,7 @@
       subtotal += (price * qty);
     });
 
-    // Update Header Badges & Count
+    // Badges & Header
     document.querySelectorAll('.cart-badge, [id*="cart-count"]').forEach(badge => {
       badge.textContent = totalUnits;
       badge.style.display = totalUnits > 0 ? 'inline-block' : 'none';
@@ -51,8 +93,8 @@
       }
     });
 
-    // Empty state check
-    if (!Array.isArray(cart) || cart.length === 0) {
+    // Empty state
+    if (cart.length === 0) {
       if (container) {
         container.innerHTML = `
           <div class="empty-cart-msg" style="text-align:center; padding:40px 20px;">
@@ -69,12 +111,12 @@
     if (summaryBox) summaryBox.style.display = 'block';
     if (timerBox) timerBox.style.display = 'flex';
 
-    // Render each item row from productsDatabase
+    // Render each distinct product line
     let itemsHtml = '';
     cart.forEach((item, index) => {
       const qty = parseInt(item.qty || item.quantity || 1, 10);
       const price = parseFloat(item.price || item.unitPrice || 0);
-      const name = item.name || item.title || 'Cosmetic Item';
+      const name = item.name || item.title || 'Cosmetic Product';
       const imgSrc = item.img || item.image || '';
 
       itemsHtml += `
@@ -95,11 +137,10 @@
 
     if (container) container.innerHTML = itemsHtml;
 
-    // Calculate Totals accurately
+    // Prices calculation
     const delivery = subtotal > 0 ? 1500 : 0;
     const grandTotal = subtotal + delivery;
 
-    // Direct text replace on target summary nodes
     document.querySelectorAll('*').forEach(el => {
       if (el.children.length === 0) {
         const text = el.textContent.trim();
@@ -116,42 +157,22 @@
     });
   };
 
-  // Quantity modification (+ / -)
+  // Change quantity (+ / -)
   window.changeCartQty = function(index, delta) {
-    let cart = syncCartState();
+    let cart = getCart();
     if (cart[index]) {
-      let currentQty = parseInt(cart[index].qty || cart[index].quantity || 1, 10);
-      currentQty += delta;
-
+      let currentQty = parseInt(cart[index].qty || 1, 10) + delta;
       if (currentQty <= 0) {
         cart.splice(index, 1);
       } else {
         cart[index].qty = currentQty;
-        if (cart[index].quantity !== undefined) cart[index].quantity = currentQty;
       }
-
-      window.cart = cart;
-      syncCartState();
+      saveCart(cart);
       window.renderCartView();
     }
   };
 
-  // 3. Intercept addToCart so every new item addition immediately triggers re-render
-  function patchAddToCart() {
-    if (typeof window.addToCart === 'function' && !window._addToCartPatched) {
-      const origAddToCart = window.addToCart;
-      window.addToCart = function(productId) {
-        origAddToCart(productId);
-        syncCartState();
-        if (typeof window.renderCartView === 'function') {
-          window.renderCartView();
-        }
-      };
-      window._addToCartPatched = true;
-    }
-  }
-
-  // Intercept switchView
+  // Intercept view switching
   if (typeof window.switchView === 'function') {
     const origSwitch = window.switchView;
     window.switchView = function(viewId) {
@@ -163,11 +184,8 @@
     };
   }
 
-  // Startup initializations
+  // Restore state on load
   function init() {
-    patchAddToCart();
-    syncCartState();
-
     try {
       const savedView = localStorage.getItem(VIEW_KEY);
       if (savedView && typeof window.switchView === 'function') {
@@ -178,7 +196,7 @@
     window.renderCartView();
   }
 
-  // Replace alert modal with soft floating toast
+  // Alert replacement
   window.alert = function(msg) {
     let toast = document.getElementById('poshella-toast');
     if (!toast) {
