@@ -1,807 +1,355 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Poshella Cosmetics</title>
-    <!-- Paystack Inline Library -->
-    <script src="https://js.paystack.co/v1/inline.js"></script>
-    <style>
-        * { box-sizing: border-box; }
-        body { font-family: Arial, sans-serif; margin: 0; padding: 0; background-color: #f4f4f4; color: #333; }
-        header { background-color: #000; color: #ff4081; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 900; }
-        header h1 { margin: 0; font-size: 20px; }
-        
-        .cart-icon-btn { background: #ff4081; color: #fff; border: none; padding: 8px 15px; border-radius: 20px; font-weight: bold; cursor: pointer; font-size: 14px; }
-        .cart-count { background: #fff; color: #ff4081; border-radius: 50%; padding: 2px 7px; font-size: 12px; margin-left: 5px; }
-        
-        .hero { background: #121212; color: #ff4081; text-align: center; padding: 40px 20px; }
-        .hero h2 { margin: 0 0 10px; }
-        .hero p { color: #fff; margin: 0; }
-        
-        .container { padding: 20px; max-width: 1000px; margin: 0 auto; }
-        .section-title { text-align: center; color: #ff4081; margin-bottom: 20px; }
-        
-        .product-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; }
-        .product-card { background: #fff; border-radius: 12px; padding: 15px; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.08); overflow: hidden; }
-        .product-card img { width: 100%; height: 180px; object-fit: cover; border-radius: 8px; margin-bottom: 10px; display: block; }
-        .product-card h3 { margin: 5px 0; font-size: 18px; }
-        .price { color: #e91e63; font-weight: bold; font-size: 16px; margin-bottom: 12px; }
-        .add-btn { background: #ff4081; color: #fff; border: none; padding: 10px 15px; border-radius: 6px; font-weight: bold; width: 100%; cursor: pointer; }
-        
-        /* Floating Pink WhatsApp Bubble */
-        .whatsapp-bubble {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background-color: #ff4081;
-            color: #fff;
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-            z-index: 1000;
-            text-decoration: none;
-            transition: transform 0.2s ease-in-out;
-        }
-        .whatsapp-bubble:hover { transform: scale(1.1); }
-        .whatsapp-bubble svg { width: 32px; height: 32px; fill: #fff; }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Poshella Cosmetics</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+    body { background-color: #0e0e0e; color: #ffffff; padding-bottom: 70px; }
 
-        /* Modal General */
-        .modal { display: none; position: fixed; top: 0; right: 0; width: 100%; max-width: 420px; height: 100%; background: #fff; box-shadow: -2px 0 10px rgba(0,0,0,0.2); z-index: 1001; flex-direction: column; }
-        .modal.active { display: flex; }
-        .modal-header { background: #ff4081; color: #fff; padding: 15px; display: flex; justify-content: space-between; align-items: center; }
-        .modal-header h3 { margin: 0; }
-        .close-btn { background: none; border: none; color: #fff; font-size: 20px; cursor: pointer; }
-        
-        /* Cart List */
-        .cart-items { flex: 1; overflow-y: auto; padding: 15px; }
-        .cart-item { display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 12px; }
-        .cart-item-img { width: 55px; height: 55px; border-radius: 8px; object-fit: cover; margin-right: 12px; }
-        .cart-item-details { flex: 1; }
-        .cart-item-details strong { font-size: 15px; color: #222; display: block; margin-bottom: 2px; }
-        .cart-item-details small { color: #e91e63; font-weight: bold; font-size: 14px; }
-        
-        .qty-controls { display: flex; align-items: center; gap: 6px; margin-top: 6px; }
-        .qty-btn { background: #eee; border: none; border-radius: 4px; width: 22px; height: 22px; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; }
-        .qty-num { font-size: 13px; font-weight: bold; padding: 0 4px; }
-        .remove-btn { background: #ff1744; color: #fff; border: none; border-radius: 4px; padding: 4px 8px; font-size: 12px; cursor: pointer; margin-left: 10px; }
-
-        /* Checkout Form */
-        .checkout-form { padding: 15px; border-top: 1px solid #eee; background: #fafafa; overflow-y: auto; max-height: 50vh; }
-        .checkout-form input, .checkout-form textarea { width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 5px; font-size: 14px; outline: none; font-family: inherit; }
-        .checkout-form input:focus, .checkout-form textarea:focus { border-color: #ff4081; }
-        .cart-total { display: flex; justify-content: space-between; font-weight: bold; font-size: 18px; margin-bottom: 15px; }
-        .pay-btn { background: #00c853; color: #fff; border: none; padding: 12px; width: 100%; border-radius: 5px; font-weight: bold; font-size: 16px; cursor: pointer; text-align: center; }
+    /* TOP HEADER & SEARCH */
+    .sticky-header {
+      position: sticky; top: 0; z-index: 1000; background: #121212; padding: 10px 14px; border-bottom: 1px solid #222;
+    }
+    .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .brand-name { font-size: 1.1rem; font-weight: 800; color: #ff2a75; letter-spacing: 0.5px; }
     
+    .search-box {
+      display: flex; align-items: center; background: #1e1e1e; border-radius: 20px; padding: 8px 14px; border: 1px solid #333;
+    }
+    .search-box input {
+      border: none; background: transparent; color: #fff; outline: none; width: 100%; margin-left: 8px; font-size: 0.85rem;
+    }
 
+    /* BANNER CAROUSEL */
+    .banner-container { padding: 12px; }
+    .banner-card {
+      background: linear-gradient(135deg, #ff2a75 0%, #a80040 100%);
+      border-radius: 12px; padding: 18px; text-align: left; color: #fff; position: relative; overflow: hidden; box-shadow: 0 4px 12px rgba(255, 42, 117, 0.2);
+    }
+    .banner-card h2 { font-size: 1.3rem; margin-bottom: 4px; font-weight: 800; }
+    .banner-card p { font-size: 0.8rem; opacity: 0.9; margin-bottom: 10px; }
+    .banner-btn {
+      background: #fff; color: #ff2a75; border: none; padding: 6px 14px; border-radius: 15px; font-weight: bold; font-size: 0.75rem; cursor: pointer;
+    }
 
-/* CLEAN AVATAR BUBBLE & MODAL STYLES */
-.header-actions {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-.profile-bubble {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: #242424;
-  border: 2px solid #ff2a75;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  cursor: pointer;
-  overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.4);
-}
-.profile-bubble img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-.profile-bubble span {
-  font-size: 1.2rem;
-}
+    /* QUICK ACTION TILES (JUMIA GRID) */
+    .quick-tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 0 12px 14px; }
+    .tile {
+      background: #181818; border: 1px solid #262626; border-radius: 10px; padding: 12px 6px; text-align: center; cursor: pointer;
+    }
+    .tile span { display: block; font-size: 1.5rem; margin-bottom: 4px; }
+    .tile p { font-size: 0.7rem; color: #ccc; font-weight: 600; }
 
-.modal-overlay {
-  position: fixed;
-  top: 0; left: 0; width: 100%; height: 100%;
-  background: rgba(0,0,0,0.8);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 9999;
-}
-.modal-overlay.hidden { display: none; }
-.auth-modal {
-  background: #181818;
-  color: #fff;
-  padding: 24px;
-  border-radius: 14px;
-  width: 90%;
-  max-width: 330px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.7);
-  position: relative;
-  border: 1px solid #333;
-  text-align: center;
-}
-.auth-modal h3 { color: #ff2a75; margin-top: 0; margin-bottom: 12px; font-size: 1.2rem; }
-.avatar-preview {
-  width: 75px;
-  height: 75px;
-  border-radius: 50%;
-  border: 2px solid #ff2a75;
-  margin: 0 auto 10px;
-  object-fit: cover;
-  display: block;
-  background: #262626;
-}
-.upload-label {
-  display: inline-block;
-  font-size: 0.75rem;
-  background: #282828;
-  color: #ff2a75;
-  padding: 6px 12px;
-  border-radius: 20px;
-  cursor: pointer;
-  margin-bottom: 12px;
-  border: 1px solid #ff2a75;
-}
-.auth-modal input {
-  width: 100%;
-  padding: 10px;
-  margin: 5px 0 12px;
-  border-radius: 8px;
-  border: 1px solid #333;
-  background: #222;
-  color: #fff;
-  box-sizing: border-box;
-  font-size: 0.85rem;
-}
-.auth-modal button.submit-btn {
-  width: 100%;
-  padding: 11px;
-  background: #ff2a75;
-  border: none;
-  border-radius: 8px;
-  color: #fff;
-  font-weight: bold;
-  cursor: pointer;
-  font-size: 0.95rem;
-  margin-top: 5px;
-}
-.close-modal {
-  position: absolute;
-  top: 10px; right: 14px;
-  background: none; border: none;
-  color: #888; font-size: 1.5rem; cursor: pointer;
-}
-.toggle-auth {
-  margin-top: 12px;
-  font-size: 0.8rem;
-  color: #aaa;
-}
-.toggle-auth span {
-  color: #ff2a75;
-  cursor: pointer;
-  font-weight: bold;
-  text-decoration: underline;
-}
-.logout-link {
-  display: block;
-  margin-top: 14px;
-  color: #ff4d4d;
-  font-size: 0.8rem;
-  text-decoration: underline;
-  cursor: pointer;
-}
+    /* FLASH SALES SECTION */
+    .flash-sale-header {
+      background: #ff2a75; color: #fff; padding: 10px 14px; border-radius: 10px 10px 0 0; display: flex; justify-content: space-between; align-items: center; font-weight: bold; font-size: 0.85rem;
+    }
+    .flash-container { background: #141414; margin: 0 12px 16px; border-radius: 10px; border: 1px solid #262626; overflow: hidden; }
+    .product-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; padding: 10px; }
+    
+    .product-card {
+      background: #1e1e1e; border-radius: 8px; overflow: hidden; border: 1px solid #2a2a2a; display: flex; flex-direction: column; justify-content: space-between;
+    }
+    .product-card img { width: 100%; height: 130px; object-fit: cover; background: #222; }
+    .product-info { padding: 8px; }
+    .product-title { font-size: 0.8rem; font-weight: 600; color: #eee; margin-bottom: 4px; line-height: 1.2; height: 2rem; overflow: hidden; }
+    .product-price { font-size: 0.9rem; font-weight: 800; color: #ff2a75; margin-bottom: 6px; }
+    .add-cart-btn {
+      width: 100%; background: #ff2a75; color: #fff; border: none; padding: 7px; border-radius: 6px; font-weight: bold; font-size: 0.75rem; cursor: pointer;
+    }
 
+    /* BOTTOM APP NAVIGATION BAR */
+    .bottom-nav {
+      position: fixed; bottom: 0; left: 0; width: 100%; background: #121212; border-top: 1px solid #222; display: flex; justify-content: space-around; padding: 8px 0; z-index: 1000;
+    }
+    .nav-item { text-align: center; color: #888; font-size: 0.65rem; text-decoration: none; cursor: pointer; position: relative; }
+    .nav-item.active { color: #ff2a75; }
+    .nav-item span { display: block; font-size: 1.2rem; margin-bottom: 2px; }
+    .badge {
+      position: absolute; top: -3px; right: 12px; background: #ff2a75; color: #fff; font-size: 0.6rem; padding: 2px 5px; border-radius: 10px; font-weight: bold;
+    }
 
-/* NAV HEADER STYLES */
-.nav-container {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 10px 15px;
-}
-.header-actions {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-.cart-btn {
-  background: #ff2a75;
-  color: white;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 20px;
-  font-weight: bold;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 0.9rem;
-}
-.profile-bubble {
-  width: 38px;
-  height: 38px;
-  border-radius: 50%;
-  background: #242424;
-  border: 2px solid #ff2a75;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  cursor: pointer;
-  overflow: hidden;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.4);
-}
-.profile-bubble img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-.profile-bubble span {
-  font-size: 1.1rem;
-}
-
-</style>
+    /* MODAL STYLES */
+    .modal-overlay {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: flex; justify-content: center; align-items: center; z-index: 9999;
+    }
+    .modal-overlay.hidden { display: none; }
+    .auth-modal {
+      background: #181818; color: #fff; padding: 22px; border-radius: 14px; width: 88%; max-width: 320px; border: 1px solid #333; text-align: center; position: relative;
+    }
+    .auth-modal h3 { color: #ff2a75; margin-bottom: 12px; font-size: 1.1rem; }
+    .auth-modal input {
+      width: 100%; padding: 10px; margin: 5px 0 10px; border-radius: 6px; border: 1px solid #333; background: #222; color: #fff; font-size: 0.85rem; box-sizing: border-box;
+    }
+    .auth-modal button.submit-btn {
+      width: 100%; padding: 10px; background: #ff2a75; border: none; border-radius: 6px; color: #fff; font-weight: bold; cursor: pointer; margin-top: 5px;
+    }
+    .close-modal { position: absolute; top: 10px; right: 14px; background: none; border: none; color: #888; font-size: 1.4rem; cursor: pointer; }
+    .toggle-auth { margin-top: 10px; font-size: 0.75rem; color: #aaa; }
+    .toggle-auth span { color: #ff2a75; cursor: pointer; text-decoration: underline; }
+  </style>
 </head>
 <body>
 
-    <header>
-        
-<div class="nav-container">
-  <h1 class="logo" style="margin:0; font-size:1.2rem; color:#ff2a75;">POSHELLA COSMETICS</h1>
-  <div class="header-actions">
-    <button class="cart-btn" onclick="openCart()">🛒 Cart <span id="cartCount">0</span></button>
-    <div id="profileBubble" class="profile-bubble" onclick="openProfileModal()">
-      <span id="avatarIcon">👤</span>
+  <!-- STICKY HEADER WITH SEARCH -->
+  <header class="sticky-header">
+    <div class="top-bar">
+      <span class="brand-name">POSHELLA</span>
+      <span style="font-size: 0.75rem; color: #aaa;">📞 Call to Order</span>
+    </div>
+    <div class="search-box">
+      <span>🔍</span>
+      <input type="text" placeholder="Search products, brands and categories...">
+    </div>
+  </header>
+
+  <!-- BANNER CAROUSEL -->
+  <div class="banner-container">
+    <div class="banner-card">
+      <h2>Beauty Festival ✨</h2>
+      <p>Up to 40% OFF on all Skincare Products</p>
+      <button class="banner-btn">Shop Now →</button>
     </div>
   </div>
-</div>
 
-        
-    
-
+  <!-- JUMIA STYLE ACTION TILES -->
+  <div class="quick-tiles">
+    <div class="tile">
+      <span>💄</span>
+      <p>MakeUp</p>
     </div>
-    
-    </header>
-
-    <section class="hero">
-        <h2>Glow Like Never Before ✨</h2>
-        <p>Select your items and pay securely online!</p>
-    </section>
-
-    <div class="container">
-        <h2 class="section-title">Our Products 💄</h2>
-        <div class="product-grid">
-            <div class="product-card">
-                <img src="https://images.unsplash.com/photo-1556228720-195a672e8a03?w=500&auto=format&fit=crop" alt="Glow Body Cream">
-                <h3>Glow Body Cream</h3>
-                <div class="price">₦5,000</div>
-                <button class="add-btn" onclick="addToCart('Glow Body Cream', 5000, 'https://images.unsplash.com/photo-1556228720-195a672e8a03?w=500&auto=format&fit=crop')">Add to Cart</button>
-            </div>
-            <div class="product-card">
-                <img src="https://images.unsplash.com/photo-1586495777744-4413f21062fa?w=500&auto=format&fit=crop" alt="Pink Lip Gloss">
-                <h3>Pink Lip Gloss</h3>
-                <div class="price">₦2,500</div>
-                <button class="add-btn" onclick="addToCart('Pink Lip Gloss', 2500, 'https://images.unsplash.com/photo-1586495777744-4413f21062fa?w=500&auto=format&fit=crop')">Add to Cart</button>
-            </div>
-            <div class="product-card">
-                <img src="https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=500&auto=format&fit=crop" alt="Face Serum">
-                <h3>Face Serum</h3>
-                <div class="price">₦4,000</div>
-                <button class="add-btn" onclick="addToCart('Face Serum', 4000, 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=500&auto=format&fit=crop')">Add to Cart</button>
-            </div>
-        </div>
+    <div class="tile">
+      <span>✨</span>
+      <p>Glow Set</p>
     </div>
-
-    <!-- Floating Pink WhatsApp Button -->
-    <a href="https://wa.me/2349020211981?text=Hello%20Poshella%20Cosmetics,%20I%20have%20an%20inquiry." class="whatsapp-bubble" target="_blank" aria-label="Contact on WhatsApp">
-        <svg viewBox="0 0 32 32">
-            <path d="M16 2A13 13 0 0 0 4.68 21.25L3 27.5l6.43-1.63A13 13 0 1 0 16 2zm0 23.6a10.55 10.55 0 0 1-5.38-1.48l-.39-.23-4 1 1.07-3.87-.25-.4A10.6 10.6 0 1 1 16 25.6zm5.82-7.92c-.32-.16-1.89-.93-2.18-1-.3-.11-.51-.16-.72.16s-.83 1-.02 1.25c-.19.22-.38.25-.7.09a8.87 8.87 0 0 1-2.6-1.6 9.8 9.8 0 0 1-1.8-2.24c-.19-.32 0-.49.14-.65s.32-.38.48-.57a2.16 2.16 0 0 0 .32-.53.59.59 0 0 0 0-.57c-.08-.16-.72-1.73-.99-2.37-.26-.62-.52-.54-.72-.55h-.61a1.18 1.18 0 0 0-.85.4 3.6 3.6 0 0 0-1.12 2.68 6.27 6.27 0 0 0 1.31 3.32c.16.22 2.27 3.47 5.5 4.87a18.42 18.42 0 0 0 1.83.68 4.41 4.41 0 0 0 2 .13 3.28 3.28 0 0 0 2.15-1.52 2.68 2.68 0 0 0 .19-1.52c-.08-.12-.29-.22-.61-.38z"/>
-        </svg>
-    </a>
-
-    <!-- Direct Checkout Drawer -->
-    <div class="modal" id="cartModal">
-        <div class="modal-header">
-            <h3>Checkout Order</h3>
-            <button class="close-btn" onclick="toggleCart()">✕</button>
-        </div>
-        
-        <div class="cart-items" id="cartItems">
-            <p style="text-align: center; color: #777;">Your cart is empty</p>
-        </div>
-
-        <form class="checkout-form" id="checkoutForm" onsubmit="event.preventDefault(); payWithPaystack();">
-            <div class="cart-total">
-                <span>Total Amount:</span>
-                <span id="cartTotal">₦0</span>
-            </div>
-
-            <input type="text" id="cust-name" placeholder="Full Name" required>
-            <input type="email" id="cust-email" placeholder="Email Address" required>
-            <input type="tel" id="cust-phone" placeholder="Phone Number (11 digits)" pattern="[0-9]{11}" required>
-            <input type="text" id="cust-address" placeholder="Delivery Address" required>
-            <input type="text" id="cust-city" placeholder="State / City" required>
-
-            <button type="submit" class="pay-btn">Pay Now 💳</button>
-        </form>
+    <div class="tile">
+      <span>🚚</span>
+      <p>Free Delivery</p>
     </div>
+  </div>
 
-    <script>
-        const YOUR_WHATSAPP_NUMBER = '2349020211981';
-        const PAYSTACK_PUBLIC_KEY = 'pk_live_YOUR_ACTUAL_PAYSTACK_KEY_HERE';
-        const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
-
-        let cart = [];
-
-        // Safe immediate loading on script start
-        function loadSavedCart() {
-            try {
-                const savedData = localStorage.getItem('poshella_cart');
-                const savedTime = localStorage.getItem('poshella_cart_time');
-
-                if (savedData && savedTime) {
-                    const now = Date.now();
-                    if (now - parseInt(savedTime, 10) > SEVEN_DAYS_MS) {
-                        clearSavedCart();
-                    } else {
-                        cart = JSON.parse(savedData) || [];
-                    }
-                }
-            } catch (e) {
-                console.error("Cart loading error:", e);
-            }
-            updateCart();
-        }
-
-        function saveCartToStorage() {
-            localStorage.setItem('poshella_cart', JSON.stringify(cart));
-            localStorage.setItem('poshella_cart_time', Date.now().toString());
-        }
-
-        function clearSavedCart() {
-            cart = [];
-            localStorage.removeItem('poshella_cart');
-            localStorage.removeItem('poshella_cart_time');
-        }
-
-        function toggleCart() {
-            document.getElementById('cartModal').classList.toggle('active');
-        }
-
-        function addToCart(title, price, image) {
-            let existingItem = cart.find(item => item.title === title);
-            if (existingItem) {
-                existingItem.qty += 1;
-            } else {
-                cart.push({ title, price, image, qty: 1 });
-            }
-            saveCartToStorage();
-            updateCart();
-        }
-
-        function changeQty(index, delta) {
-            cart[index].qty += delta;
-            if (cart[index].qty <= 0) {
-                cart.splice(index, 1);
-            }
-            saveCartToStorage();
-            updateCart();
-        }
-
-        function removeFromCart(index) {
-            cart.splice(index, 1);
-            saveCartToStorage();
-            updateCart();
-        }
-
-        function updateCart() {
-            const cartItemsContainer = document.getElementById('cartItems');
-            const cartCount = document.getElementById('cart-count');
-            const cartTotal = document.getElementById('cartTotal');
-
-            if (!cartItemsContainer || !cartCount || !cartTotal) return;
-
-            let totalItems = cart.reduce((sum, item) => sum + item.qty, 0);
-            cartCount.innerText = totalItems;
-
-            if (cart.length === 0) {
-                cartItemsContainer.innerHTML = '<p style="text-align: center; color: #777;">Your cart is empty</p>';
-                cartTotal.innerText = '₦0';
-                return;
-            }
-
-            let grandTotal = 0;
-            cartItemsContainer.innerHTML = '';
-
-            cart.forEach((item, index) => {
-                let itemSubtotal = item.price * item.qty;
-                grandTotal += itemSubtotal;
-                
-                cartItemsContainer.innerHTML += `
-                    <div class="cart-item">
-                        <img src="${item.image}" class="cart-item-img" alt="${item.title}">
-                        <div class="cart-item-details">
-                            <strong>${item.title}</strong>
-                            <small>₦${itemSubtotal.toLocaleString()}</small>
-                            <div class="qty-controls">
-                                <button type="button" class="qty-btn" onclick="changeQty(${index}, -1)">-</button>
-                                <span class="qty-num">${item.qty}</span>
-                                <button type="button" class="qty-btn" onclick="changeQty(${index}, 1)">+</button>
-                            </div>
-                        </div>
-                        <button type="button" class="remove-btn" onclick="removeFromCart(${index})">✕ Remove</button>
-                    </div>
-                `;
-            });
-
-            cartTotal.innerText = '₦' + grandTotal.toLocaleString();
-        }
-
-        function payWithPaystack() {
-            if (cart.length === 0) {
-                alert('Please select an item first.');
-                return;
-            }
-
-            if (typeof PaystackPop === 'undefined') {
-                alert('Paystack key missing or script blocked. Please update PK_LIVE key.');
-                return;
-            }
-
-            const name = document.getElementById('cust-name').value.trim();
-            const email = document.getElementById('cust-email').value.trim();
-            const phone = document.getElementById('cust-phone').value.trim();
-            const address = document.getElementById('cust-address').value.trim();
-            const city = document.getElementById('cust-city').value.trim();
-
-            let totalAmount = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
-            let itemsSummary = cart.map(i => `${i.title} (x${i.qty})`).join(', ');
-
-            let handler = PaystackPop.setup({
-                key: PAYSTACK_PUBLIC_KEY,
-                email: email,
-                amount: totalAmount * 100,
-                currency: 'NGN',
-                ref: 'POSH-' + Math.floor(100000 + Math.random() * 900000),
-                metadata: {
-                    custom_fields: [
-                        { display_name: "Customer Name", variable_name: "customer_name", value: name },
-                        { display_name: "Phone Number", variable_name: "phone_number", value: phone },
-                        { display_name: "Delivery Address", variable_name: "delivery_address", value: address + ', ' + city },
-                        { display_name: "Items Purchased", variable_name: "items", value: itemsSummary }
-                    ]
-                },
-                callback: function(response) {
-                    alert('Payment successful! Redirecting to WhatsApp to send delivery details...');
-                    
-                    let waMessage = `*NEW PAID ORDER!* 🛍️\n\n` +
-                        `*Order Ref:* ${response.reference}\n` +
-                        `*Name:* ${name}\n` +
-                        `*Phone:* ${phone}\n` +
-                        `*Email:* ${email}\n` +
-                        `*Address:* ${address}, ${city}\n\n` +
-                        `*Items Ordered:* ${itemsSummary}\n` +
-                        `*Total Paid:* ₦${totalAmount.toLocaleString()}`;
-
-                    let waUrl = `https://wa.me/${YOUR_WHATSAPP_NUMBER}?text=${encodeURIComponent(waMessage)}`;
-
-                    clearSavedCart();
-                    document.getElementById('checkoutForm').reset();
-                    updateCart();
-                    toggleCart();
-
-                    window.location.href = waUrl;
-                },
-                onClose: function() {
-                    alert('Transaction cancelled.');
-                }
-            });
-
-            handler.openIframe();
-        }
-
-        // Initialize cart loading immediately
-        loadSavedCart();
-    </script>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<!-- AUTHENTICATION & PROFILE MODAL -->
-<div id="authModal" class="modal-overlay hidden">
-  <div class="auth-modal">
-    <button class="close-modal" onclick="closeAuthModal()">&times;</button>
-    <h3 id="modalTitle">Login to Account</h3>
-    
-    <!-- Profile Image Upload (For Registration / Edit) -->
-    <div id="avatarSection" class="hidden">
-      <img id="avatarPreview" src="" class="avatar-preview hidden" alt="Profile Picture">
-      <div id="defaultAvatarIcon" style="font-size: 2.2rem; margin-bottom: 6px;">👤</div>
-      <label class="upload-label" for="avatarInput">📷 Pick Profile Photo</label>
-      <input type="file" id="avatarInput" accept="image/*" style="display:none;" onchange="previewGalleryImage(event)">
+  <!-- FLASH SALES SECTION -->
+  <div class="flash-container">
+    <div class="flash-sale-header">
+      <span>⚡ Flash Sales</span>
+      <span id="countdown">14h : 40m : 49s</span>
     </div>
-
-    <!-- Login / Register Form -->
-    <form id="authForm" onsubmit="handleAuthSubmit(event)" style="text-align: left;">
+    <div class="product-grid">
       
-      <div id="usernameGroup" class="hidden">
-        <label style="font-size: 0.75rem; color: #aaa;">Username (Unique)</label>
-        <input type="text" id="regUsername" placeholder="Choose a unique username">
+      <!-- Product 1 -->
+      <div class="product-card">
+        <img src="https://images.unsplash.com/photo-1556228720-195a672e8a03?w=300" alt="Glow Body Cream">
+        <div class="product-info">
+          <div class="product-title">Glow Body Cream - 250ml</div>
+          <div class="product-price">₦5,000</div>
+          <button class="add-cart-btn" onclick="addToCart('Glow Body Cream', 5000)">Add to Cart</button>
+        </div>
       </div>
 
-      <div id="loginIdentifierGroup">
-        <label style="font-size: 0.75rem; color: #aaa;" id="identifierLabel">Email or Phone Number</label>
-        <input type="text" id="loginIdentifier" placeholder="Email or Phone">
+      <!-- Product 2 -->
+      <div class="product-card">
+        <img src="https://images.unsplash.com/photo-1586495777744-4413f21062fa?w=300" alt="Matte Lipstick">
+        <div class="product-info">
+          <div class="product-title">Matte Lipstick - Velvet Red</div>
+          <div class="product-price">₦3,500</div>
+          <button class="add-cart-btn" onclick="addToCart('Matte Lipstick', 3500)">Add to Cart</button>
+        </div>
       </div>
 
-      <div id="emailPhoneRegGroup" class="hidden">
-        <label style="font-size: 0.75rem; color: #aaa;">Email Address</label>
-        <input type="email" id="regEmail" placeholder="yourname@gmail.com">
-        
-        <label style="font-size: 0.75rem; color: #aaa;">Phone Number</label>
-        <input type="tel" id="regPhone" placeholder="08012345678">
-      </div>
-
-      <label style="font-size: 0.75rem; color: #aaa;">Password</label>
-      <input type="password" id="authPassword" placeholder="••••••••" required>
-
-      <button type="submit" class="submit-btn" id="submitAuthBtn">Login</button>
-    </form>
-    
-    <div class="toggle-auth" id="authToggleText">
-      Don't have an account? <span onclick="switchMode('register')">Create Account</span>
     </div>
-
-    <span id="logoutBtn" class="logout-link hidden" onclick="logoutUser()">Log Out</span>
   </div>
-</div>
 
+  <!-- BOTTOM APP NAVIGATION -->
+  <nav class="bottom-nav">
+    <div class="nav-item active">
+      <span>🏠</span>
+      Home
+    </div>
+    <div class="nav-item">
+      <span>📋</span>
+      Categories
+    </div>
+    <div class="nav-item" onclick="openCart()">
+      <span>🛒</span>
+      Cart
+      <span class="badge" id="cartBadge">0</span>
+    </div>
+    <div class="nav-item" onclick="openProfileModal()">
+      <span id="bottomNavAvatar">👤</span>
+      Account
+    </div>
+  </nav>
 
-<script>
-const SESSION_MS = 60 * 60 * 1000; // 1 hour session limit
-let currentMode = 'login'; // 'login', 'register', or 'profile'
-let tempAvatarBase64 = null;
+  <!-- AUTHENTICATION & PROFILE MODAL -->
+  <div id="authModal" class="modal-overlay hidden">
+    <div class="auth-modal">
+      <button class="close-modal" onclick="closeAuthModal()">&times;</button>
+      <h3 id="modalTitle">Login to Account</h3>
+      
+      <form id="authForm" onsubmit="handleAuthSubmit(event)" style="text-align: left;">
+        <div id="usernameGroup" class="hidden">
+          <label style="font-size: 0.7rem; color: #aaa;">Username</label>
+          <input type="text" id="regUsername" placeholder="Unique username">
+        </div>
 
-// Helper to get registered users array from localStorage
-function getUsers() {
-  return JSON.parse(localStorage.getItem('poshella_users')) || [];
-}
+        <div id="loginIdentifierGroup">
+          <label style="font-size: 0.7rem; color: #aaa;">Email or Phone Number</label>
+          <input type="text" id="loginIdentifier" placeholder="Email or Phone">
+        </div>
 
-function saveUsers(users) {
-  localStorage.setItem('poshella_users', JSON.stringify(users));
-}
+        <div id="emailPhoneRegGroup" class="hidden">
+          <label style="font-size: 0.7rem; color: #aaa;">Email Address</label>
+          <input type="email" id="regEmail" placeholder="yourname@gmail.com">
+          
+          <label style="font-size: 0.7rem; color: #aaa;">Phone Number</label>
+          <input type="tel" id="regPhone" placeholder="08012345678">
+        </div>
 
-function getActiveSession() {
-  const session = JSON.parse(localStorage.getItem('poshella_session'));
-  if (!session) return null;
-  const now = new Date().getTime();
-  if (now - session.loginTimestamp < SESSION_MS) {
-    return session;
-  } else {
-    localStorage.removeItem('poshella_session');
-    return null;
-  }
-}
+        <label style="font-size: 0.7rem; color: #aaa;">Password</label>
+        <input type="password" id="authPassword" placeholder="••••••••" required>
 
-function updateProfileUI() {
-  const session = getActiveSession();
-  const profileBubble = document.getElementById('profileBubble');
-  
-  if (session) {
-    if (session.avatar) {
-      profileBubble.innerHTML = `<img src="${session.avatar}" alt="${session.username}">`;
-    } else {
-      profileBubble.innerHTML = `<span>👤</span>`;
-    }
-  } else {
-    profileBubble.innerHTML = `<span>👤</span>`;
-  }
-}
+        <button type="submit" class="submit-btn" id="submitAuthBtn">Login</button>
+      </form>
+      
+      <div class="toggle-auth" id="authToggleText">
+        Don't have an account? <span onclick="switchMode('register')">Create Account</span>
+      </div>
 
-function switchMode(mode) {
-  currentMode = mode;
-  const modalTitle = document.getElementById('modalTitle');
-  const avatarSection = document.getElementById('avatarSection');
-  const usernameGroup = document.getElementById('usernameGroup');
-  const loginIdentifierGroup = document.getElementById('loginIdentifierGroup');
-  const emailPhoneRegGroup = document.getElementById('emailPhoneRegGroup');
-  const submitAuthBtn = document.getElementById('submitAuthBtn');
-  const authToggleText = document.getElementById('authToggleText');
-  const logoutBtn = document.getElementById('logoutBtn');
+      <div id="logoutBtn" style="color:#ff4d4d; font-size:0.75rem; margin-top:10px; cursor:pointer;" class="hidden" onclick="logoutUser()">Log Out</div>
+    </div>
+  </div>
 
-  document.getElementById('authForm').reset();
+  <script>
+    const SESSION_MS = 60 * 60 * 1000;
+    let currentMode = 'login';
+    let cartCount = 0;
 
-  if (mode === 'login') {
-    modalTitle.textContent = "Login to Account";
-    avatarSection.classList.add('hidden');
-    usernameGroup.classList.add('hidden');
-    loginIdentifierGroup.classList.remove('hidden');
-    emailPhoneRegGroup.classList.add('hidden');
-    submitAuthBtn.textContent = "Login";
-    logoutBtn.classList.add('hidden');
-    authToggleText.innerHTML = `Don't have an account? <span onclick="switchMode('register')">Create Account</span>`;
-  } else if (mode === 'register') {
-    modalTitle.textContent = "Create New Account";
-    avatarSection.classList.remove('hidden');
-    usernameGroup.classList.remove('hidden');
-    loginIdentifierGroup.classList.add('hidden');
-    emailPhoneRegGroup.classList.remove('hidden');
-    submitAuthBtn.textContent = "Register & Login";
-    logoutBtn.classList.add('hidden');
-    authToggleText.innerHTML = `Already have an account? <span onclick="switchMode('login')">Login</span>`;
-  } else if (mode === 'profile') {
-    const session = getActiveSession();
-    modalTitle.textContent = `@${session.username}`;
-    avatarSection.classList.remove('hidden');
-    usernameGroup.classList.add('hidden');
-    loginIdentifierGroup.classList.add('hidden');
-    emailPhoneRegGroup.classList.add('hidden');
-    submitAuthBtn.textContent = "Update Profile Photo";
-    logoutBtn.classList.remove('hidden');
-    authToggleText.innerHTML = ``;
-    
-    if (session.avatar) {
-      document.getElementById('avatarPreview').src = session.avatar;
-      document.getElementById('avatarPreview').classList.remove('hidden');
-      document.getElementById('defaultAvatarIcon').classList.add('hidden');
-    }
-  }
-}
+    function getUsers() { return JSON.parse(localStorage.getItem('poshella_users')) || []; }
+    function saveUsers(users) { localStorage.setItem('poshella_users', JSON.stringify(users)); }
 
-function openProfileModal() {
-  const session = getActiveSession();
-  if (session) {
-    switchMode('profile');
-  } else {
-    switchMode('login');
-  }
-  document.getElementById('authModal').classList.remove('hidden');
-}
-
-function closeAuthModal() {
-  document.getElementById('authModal').classList.add('hidden');
-}
-
-function previewGalleryImage(event) {
-  const file = event.target.files[0];
-  if (file) {
-    const reader = new FileReader();
-    reader.onload = function(e) {
-      tempAvatarBase64 = e.target.result;
-      const avatarPreview = document.getElementById('avatarPreview');
-      const defaultIcon = document.getElementById('defaultAvatarIcon');
-      avatarPreview.src = tempAvatarBase64;
-      avatarPreview.classList.remove('hidden');
-      defaultIcon.classList.add('hidden');
-    };
-    reader.readAsDataURL(file);
-  }
-}
-
-function handleAuthSubmit(e) {
-  e.preventDefault();
-  const users = getUsers();
-
-  if (currentMode === 'register') {
-    const username = document.getElementById('regUsername').value.trim();
-    const email = document.getElementById('regEmail').value.trim().toLowerCase();
-    const phone = document.getElementById('regPhone').value.trim();
-    const password = document.getElementById('authPassword').value;
-
-    if (!username || !email || !phone || !password) {
-      alert("Please fill in all registration fields.");
-      return;
+    function getActiveSession() {
+      const session = JSON.parse(localStorage.getItem('poshella_session'));
+      if (!session) return null;
+      if (new Date().getTime() - session.loginTimestamp < SESSION_MS) return session;
+      localStorage.removeItem('poshella_session');
+      return null;
     }
 
-    // Check unique username and email
-    if (users.some(u => u.username.toLowerCase() === username.toLowerCase())) {
-      alert("Username already taken! Please choose another one.");
-      return;
-    }
-    if (users.some(u => u.email.toLowerCase() === email)) {
-      alert("An account with this email already exists.");
-      return;
-    }
-
-    const newUser = {
-      username: username,
-      email: email,
-      phone: phone,
-      password: password,
-      avatar: tempAvatarBase64 || null
-    };
-
-    users.push(newUser);
-    saveUsers(users);
-
-    // Create session (1 hour)
-    const session = {
-      username: newUser.username,
-      email: newUser.email,
-      phone: newUser.phone,
-      avatar: newUser.avatar,
-      loginTimestamp: new Date().getTime()
-    };
-
-    localStorage.setItem('poshella_session', JSON.stringify(session));
-    alert(`Account created successfully! Welcome @${username}`);
-    closeAuthModal();
-    updateProfileUI();
-
-  } else if (currentMode === 'login') {
-    const identifier = document.getElementById('loginIdentifier').value.trim().toLowerCase();
-    const password = document.getElementById('authPassword').value;
-
-    // Match by Email OR Phone + Password
-    const foundUser = users.find(u => 
-      (u.email.toLowerCase() === identifier || u.phone === identifier) && u.password === password
-    );
-
-    if (foundUser) {
-      const session = {
-        username: foundUser.username,
-        email: foundUser.email,
-        phone: foundUser.phone,
-        avatar: foundUser.avatar,
-        loginTimestamp: new Date().getTime()
-      };
-      localStorage.setItem('poshella_session', JSON.stringify(session));
-      alert(`Welcome back, @${foundUser.username}!`);
-      closeAuthModal();
-      updateProfileUI();
-    } else {
-      alert("Invalid login details! Check your Email/Phone and Password.");
-    }
-  } else if (currentMode === 'profile') {
-    const session = getActiveSession();
-    if (session && tempAvatarBase64) {
-      session.avatar = tempAvatarBase64;
-      session.loginTimestamp = new Date().getTime(); // refresh session timestamp
-      localStorage.setItem('poshella_session', JSON.stringify(session));
-
-      // Also update in registered users database
-      const userIdx = users.findIndex(u => u.username === session.username);
-      if (userIdx !== -1) {
-        users[userIdx].avatar = tempAvatarBase64;
-        saveUsers(users);
+    function updateProfileUI() {
+      const session = getActiveSession();
+      const bottomNavAvatar = document.getElementById('bottomNavAvatar');
+      if (session) {
+        bottomNavAvatar.textContent = "✅";
+      } else {
+        bottomNavAvatar.textContent = "👤";
       }
-
-      alert("Profile picture updated!");
-      closeAuthModal();
-      updateProfileUI();
     }
-  }
-}
 
-function logoutUser() {
-  if (confirm("Are you sure you want to log out?")) {
-    localStorage.removeItem('poshella_session');
-    tempAvatarBase64 = null;
-    closeAuthModal();
-    updateProfileUI();
-  }
-}
+    function addToCart(name, price) {
+      cartCount++;
+      document.getElementById('cartBadge').textContent = cartCount;
+      alert(`${name} added to cart!`);
+    }
 
-window.addEventListener('DOMContentLoaded', updateProfileUI);
-</script>
+    function openCart() {
+      alert(`Cart has ${cartCount} items.`);
+    }
 
+    function switchMode(mode) {
+      currentMode = mode;
+      const modalTitle = document.getElementById('modalTitle');
+      const usernameGroup = document.getElementById('usernameGroup');
+      const loginIdentifierGroup = document.getElementById('loginIdentifierGroup');
+      const emailPhoneRegGroup = document.getElementById('emailPhoneRegGroup');
+      const submitAuthBtn = document.getElementById('submitAuthBtn');
+      const authToggleText = document.getElementById('authToggleText');
+      const logoutBtn = document.getElementById('logoutBtn');
+
+      document.getElementById('authForm').reset();
+
+      if (mode === 'login') {
+        modalTitle.textContent = "Login to Account";
+        usernameGroup.classList.add('hidden');
+        loginIdentifierGroup.classList.remove('hidden');
+        emailPhoneRegGroup.classList.add('hidden');
+        submitAuthBtn.textContent = "Login";
+        logoutBtn.classList.add('hidden');
+        authToggleText.innerHTML = `Don't have an account? <span onclick="switchMode('register')">Create Account</span>`;
+      } else if (mode === 'register') {
+        modalTitle.textContent = "Create Account";
+        usernameGroup.classList.remove('hidden');
+        loginIdentifierGroup.classList.add('hidden');
+        emailPhoneRegGroup.classList.remove('hidden');
+        submitAuthBtn.textContent = "Register & Login";
+        logoutBtn.classList.add('hidden');
+        authToggleText.innerHTML = `Already have an account? <span onclick="switchMode('login')">Login</span>`;
+      } else if (mode === 'profile') {
+        const session = getActiveSession();
+        modalTitle.textContent = `@${session.username}`;
+        usernameGroup.classList.add('hidden');
+        loginIdentifierGroup.classList.add('hidden');
+        emailPhoneRegGroup.classList.add('hidden');
+        submitAuthBtn.classList.add('hidden');
+        logoutBtn.classList.remove('hidden');
+        authToggleText.innerHTML = `Session expires in 1 hour.`;
+      }
+    }
+
+    function openProfileModal() {
+      const session = getActiveSession();
+      if (session) { switchMode('profile'); } else { switchMode('login'); }
+      document.getElementById('authModal').classList.remove('hidden');
+    }
+
+    function closeAuthModal() { document.getElementById('authModal').classList.add('hidden'); }
+
+    function handleAuthSubmit(e) {
+      e.preventDefault();
+      const users = getUsers();
+
+      if (currentMode === 'register') {
+        const username = document.getElementById('regUsername').value.trim();
+        const email = document.getElementById('regEmail').value.trim().toLowerCase();
+        const phone = document.getElementById('regPhone').value.trim();
+        const password = document.getElementById('authPassword').value;
+
+        if (users.some(u => u.username.toLowerCase() === username.toLowerCase())) { alert("Username taken!"); return; }
+        if (users.some(u => u.email.toLowerCase() === email)) { alert("Email already exists!"); return; }
+
+        const newUser = { username, email, phone, password };
+        users.push(newUser); saveUsers(users);
+
+        const session = { ...newUser, loginTimestamp: new Date().getTime() };
+        localStorage.setItem('poshella_session', JSON.stringify(session));
+        alert(`Account created! Welcome @${username}`);
+        closeAuthModal(); updateProfileUI();
+
+      } else if (currentMode === 'login') {
+        const identifier = document.getElementById('loginIdentifier').value.trim().toLowerCase();
+        const password = document.getElementById('authPassword').value;
+
+        const foundUser = users.find(u => (u.email.toLowerCase() === identifier || u.phone === identifier) && u.password === password);
+        if (foundUser) {
+          const session = { ...foundUser, loginTimestamp: new Date().getTime() };
+          localStorage.setItem('poshella_session', JSON.stringify(session));
+          alert(`Welcome back @${foundUser.username}!`);
+          closeAuthModal(); updateProfileUI();
+        } else {
+          alert("Invalid Email/Phone or Password!");
+        }
+      }
+    }
+
+    function logoutUser() {
+      if (confirm("Log out?")) {
+        localStorage.removeItem('poshella_session');
+        closeAuthModal(); updateProfileUI();
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', updateProfileUI);
+  </script>
 </body>
 </html>
