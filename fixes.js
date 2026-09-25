@@ -141,3 +141,84 @@
 
   observer.observe(document.body, { childList: true, subtree: true });
 })();
+
+// --- FIX: ACCURATE CART PRICING & QUANTITY TOTALS ---
+(function() {
+  function recalculateCartTotals() {
+    const rawCart = localStorage.getItem('poshella_cart') || localStorage.getItem('cart') || '[]';
+    let cart = [];
+    try {
+      cart = JSON.parse(rawCart);
+    } catch(e) {
+      cart = [];
+    }
+
+    if (!Array.isArray(cart)) return;
+
+    let totalItemUnits = 0;
+    let subtotalPrice = 0;
+
+    cart.forEach(item => {
+      const qty = parseInt(item.quantity || item.qty || 1, 10);
+      const unitPrice = parseFloat(item.unitPrice || item.price || 0);
+      
+      totalItemUnits += qty;
+      subtotalPrice += (unitPrice * qty);
+    });
+
+    const deliveryFee = subtotalPrice > 0 ? 1500 : 0;
+    const grandTotal = subtotalPrice + deliveryFee;
+
+    // Update Header Count to total items
+    document.querySelectorAll('.view-title, header h2, .cart-header-title').forEach(el => {
+      if (el.textContent.includes('Shopping Cart')) {
+        el.textContent = `Shopping Cart (${totalItemUnits})`;
+      }
+    });
+
+    // Update Bottom Nav Badge to match total item units
+    document.querySelectorAll('.cart-badge, [id*="cart-count"], [class*="badge"]').forEach(badge => {
+      if (totalItemUnits > 0) {
+        badge.textContent = totalItemUnits;
+        badge.style.display = 'inline-block';
+      } else {
+        badge.textContent = '0';
+        badge.style.display = 'none';
+      }
+    });
+
+    // Update Subtotal and Total DOM elements accurately
+    document.querySelectorAll('*').forEach(el => {
+      if (el.children.length === 0) {
+        if (el.textContent.trim() === 'Subtotal' && el.nextElementSibling) {
+          el.nextElementSibling.textContent = `₦${subtotalPrice.toLocaleString()}`;
+        }
+        if (el.textContent.trim() === 'Total' && el.nextElementSibling) {
+          el.nextElementSibling.textContent = `₦${grandTotal.toLocaleString()}`;
+        }
+      }
+    });
+  }
+
+  // Intercept cart rendering and quantity changes
+  const originalRenderCart = window.renderCart;
+  if (typeof originalRenderCart === 'function') {
+    window.renderCart = function(...args) {
+      originalRenderCart.apply(this, args);
+      setTimeout(recalculateCartTotals, 50);
+    };
+  }
+
+  // Monitor DOM changes inside cart view
+  const observer = new MutationObserver(() => {
+    recalculateCartTotals();
+  });
+
+  document.addEventListener('DOMContentLoaded', () => {
+    recalculateCartTotals();
+    const cartView = document.getElementById('cart-view') || document.getElementById('cart');
+    if (cartView) {
+      observer.observe(cartView, { childList: true, subtree: true });
+    }
+  });
+})();
