@@ -145,6 +145,19 @@
     .menu-item { display: flex; justify-content: space-between; align-items: center; padding: 13px 16px; border-bottom: 1px solid #1f1f1f; color: #ddd; font-size: 0.85rem; cursor: pointer; }
     .menu-item-left { display: flex; align-items: center; gap: 12px; }
 
+    
+    /* CHECKOUT PAGE VIEW */
+    .checkout-page { display: none; background: #0e0e0e; padding: 14px; min-height: 85vh; }
+    .checkout-page.active { display: block; }
+    .checkout-section-title { font-size: 0.9rem; font-weight: bold; color: #ff2a75; text-transform: uppercase; margin-bottom: 10px; margin-top: 14px; }
+    .form-group { margin-bottom: 12px; }
+    .form-group label { display: block; font-size: 0.75rem; color: #aaa; margin-bottom: 4px; font-weight: 600; }
+    .form-group input, .form-group select { width: 100%; background: #181818; border: 1px solid #2a2a2a; border-radius: 8px; padding: 10px 12px; color: #fff; font-size: 0.85rem; outline: none; }
+    .form-group input:focus { border-color: #ff2a75; }
+    .payment-option-card { background: #141414; border: 1px solid #2a2a2a; border-radius: 8px; padding: 12px; margin-bottom: 10px; display: flex; align-items: center; gap: 10px; cursor: pointer; }
+    .payment-option-card.selected { border-color: #ff2a75; background: #1e1217; }
+    .btn-pay-now { width: 100%; background: #ff2a75; color: #fff; border: none; padding: 14px; border-radius: 8px; font-size: 1rem; font-weight: bold; margin-top: 16px; cursor: pointer; }
+
     /* HELP & SERVICES SUBPAGE VIEW */
     .help-page { display: none; background: #0e0e0e; min-height: 90vh; }
     .help-page.active { display: block; }
@@ -328,6 +341,58 @@
     <div style="text-align: center; padding: 24px 16px;">
       <span style="color:#ff2a75; font-weight:bold; cursor:pointer;" onclick="handleLogoutClick()">Logout</span>
     </div>
+  </section>
+
+  
+  <!-- CHECKOUT PAGE VIEW -->
+  <section id="checkoutView" class="checkout-page">
+    <div class="subpage-header" style="margin: -14px -14px 14px -14px;">
+      <span class="back-btn" onclick="switchView('cart')">←</span>
+      <span class="header-title">Checkout</span>
+    </div>
+
+    <div class="checkout-section-title">1. Delivery Address</div>
+    <div style="background:#141414; padding:14px; border-radius:10px; border:1px solid #222;">
+      <div class="form-group">
+        <label>Full Name</label>
+        <input type="text" id="custName" placeholder="e.g. Grace Bond">
+      </div>
+      <div class="form-group">
+        <label>Phone Number</label>
+        <input type="tel" id="custPhone" placeholder="08012345678">
+      </div>
+      <div class="form-group">
+        <label>Delivery Address</label>
+        <input type="text" id="custAddress" placeholder="Street address, house/flat number">
+      </div>
+      <div class="form-group">
+        <label>State / Region</label>
+        <select id="custState">
+          <option value="Lagos">Lagos</option>
+          <option value="Abuja">Abuja</option>
+          <option value="Port Harcourt">Port Harcourt</option>
+          <option value="Other">Other State</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="checkout-section-title">2. Payment Method</div>
+    <div class="payment-option-card selected">
+      <input type="radio" checked name="payMethod">
+      <div>
+        <div style="font-size:0.85rem; font-weight:bold; color:#fff;">Pay with Card / Transfer / USSD</div>
+        <div style="font-size:0.75rem; color:#888;">Secured by Paystack</div>
+      </div>
+    </div>
+
+    <div class="checkout-section-title">3. Order Summary</div>
+    <div class="cart-summary-box" style="margin-top:0;">
+      <div class="summary-row"><span>Items Total</span><span id="checkoutSubtotal">₦0</span></div>
+      <div class="summary-row"><span>Delivery Fee</span><span>₦1,500</span></div>
+      <div class="summary-row total"><span>Total Payable</span><span id="checkoutGrandTotal">₦0</span></div>
+    </div>
+
+    <button class="btn-pay-now" onclick="triggerPaystackPayment()">Pay Now →</button>
   </section>
 
   <!-- HELP & SERVICES VIEW -->
@@ -612,9 +677,36 @@
       document.getElementById('cartGrandTotal').textContent = `₦${grandTotal.toLocaleString()}`;
     }
 
+    
     function proceedToCheckout() {
-      showToast("Redirecting to Paystack checkout...");
+      if (cart.length === 0) {
+        showToast("Your cart is empty!");
+        return;
+      }
+
+      let subtotal = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+      const deliveryFee = 1500;
+      const grandTotal = subtotal + deliveryFee;
+
+      document.getElementById('checkoutSubtotal').textContent = `₦${subtotal.toLocaleString()}`;
+      document.getElementById('checkoutGrandTotal').textContent = `₦${grandTotal.toLocaleString()}`;
+
+      switchView('checkout');
     }
+
+    function triggerPaystackPayment() {
+      const name = document.getElementById('custName').value.trim();
+      const phone = document.getElementById('custPhone').value.trim();
+      const address = document.getElementById('custAddress').value.trim();
+
+      if (!name || !phone || !address) {
+        showToast("Please fill in your delivery details");
+        return;
+      }
+
+      showToast("Initializing Paystack payment gateway...");
+    }
+
 
     function switchView(target) {
       const homeView = document.getElementById('homeView');
@@ -622,6 +714,7 @@
       const detailsView = document.getElementById('detailsView');
       const cartView = document.getElementById('cartView');
       const helpView = document.getElementById('helpView');
+      const checkoutView = document.getElementById('checkoutView');
       const mainHeader = document.getElementById('mainHeader');
       const mainBottomNav = document.getElementById('mainBottomNav');
 
@@ -634,6 +727,7 @@
       detailsView.classList.remove('active');
       cartView.classList.remove('active');
       helpView.classList.remove('active');
+      checkoutView.classList.remove('active');
 
       navHome.classList.remove('active');
       navCart.classList.remove('active');
@@ -652,6 +746,10 @@
       } else if (target === 'account') {
         accountView.classList.add('active');
         navAccount.classList.add('active');
+        mainBottomNav.style.display = 'flex';
+      } else if (target === 'checkout') {
+        checkoutView.classList.add('active');
+        mainHeader.style.display = 'none';
         mainBottomNav.style.display = 'flex';
       } else if (target === 'help') {
         helpView.classList.add('active');
