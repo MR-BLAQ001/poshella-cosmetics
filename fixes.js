@@ -1,55 +1,109 @@
 (function() {
   const VIEW_KEY = 'poshella_saved_page';
-  const CART_KEY = 'poshella_cart';
 
-  // Restore cart array globally and re-render the view
-  function restoreAndRenderCart() {
-    const rawData = localStorage.getItem(CART_KEY) || localStorage.getItem('cart') || '[]';
-    let savedCart = [];
+  // OVERWRITE the old renderCartView function in browser memory
+  window.renderCartView = function() {
+    const container = document.getElementById('cartItemsContainer') || document.getElementById('cart-items');
+    const summaryBox = document.getElementById('cartSummary') || document.querySelector('.cart-summary');
+    const timerBox = document.getElementById('cartTimer');
+
+    // 1. Pull latest items from localStorage
+    const rawCart = localStorage.getItem('poshella_cart') || localStorage.getItem('cart') || '[]';
+    let cart = [];
     try {
-      savedCart = JSON.parse(rawData);
+      cart = JSON.parse(rawCart);
     } catch(e) {
-      savedCart = [];
+      cart = [];
+    }
+    window.cart = cart;
+
+    // 2. Update badge count if helper exists
+    if (typeof window.updateCartBadge === 'function') {
+      window.updateCartBadge();
     }
 
-    // Force global window.cart variable to hold the stored items
-    window.cart = savedCart;
-
-    // Trigger the page's cart view renderer
-    if (typeof window.renderCartView === 'function') {
-      window.renderCartView();
+    // 3. If empty, render empty state
+    if (!Array.isArray(cart) || cart.length === 0) {
+      if (container) {
+        container.innerHTML = `
+          <div class="empty-cart-msg" style="text-align:center; padding:40px 20px;">
+            <span style="font-size:3rem; display:block; margin-bottom:10px;">🛒</span>
+            <p style="color:#aaa; font-size:1rem; margin:0;">Your cart is currently empty!</p>
+          </div>
+        `;
+      }
+      if (summaryBox) summaryBox.style.display = 'none';
+      if (timerBox) timerBox.style.display = 'none';
+      return;
     }
-  }
 
-  // Intercept view switching so navigation stays synced
-  if (typeof window.switchView === 'function' && !window._switchFixed) {
-    const originalSwitch = window.switchView;
+    // 4. If items exist, force display of items
+    if (summaryBox) summaryBox.style.display = 'block';
+    if (timerBox) timerBox.style.display = 'flex';
+
+    let itemsHtml = '';
+    let subtotal = 0;
+
+    cart.forEach((item) => {
+      const qty = parseInt(item.quantity || item.qty || 1, 10);
+      const price = parseFloat(item.price || item.unitPrice || 0);
+      const itemTotal = price * qty;
+      subtotal += itemTotal;
+
+      itemsHtml += `
+        <div class="cart-item" style="display:flex; align-items:center; gap:12px; background:#181818; padding:12px; border-radius:10px; margin-bottom:10px; border:1px solid #282828;">
+          <img src="${item.image || item.img || ''}" style="width:60px; height:60px; object-fit:cover; border-radius:8px;" onerror="this.style.display='none'">
+          <div style="flex:1;">
+            <h4 style="margin:0 0 4px 0; color:#fff; font-size:0.95rem;">${item.name || item.title || 'Product'}</h4>
+            <p style="margin:0; color:#ff2a75; font-weight:bold; font-size:0.9rem;">₦${price.toLocaleString()}</p>
+          </div>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span style="color:#fff; font-weight:bold; font-size:0.9rem;">Qty: ${qty}</span>
+          </div>
+        </div>
+      `;
+    });
+
+    if (container) {
+      container.innerHTML = itemsHtml;
+    }
+
+    // Update prices
+    const delivery = 1500;
+    const grandTotal = subtotal + delivery;
+
+    const subtotalEl = document.getElementById('cartSubtotal');
+    const totalEl = document.getElementById('cartTotal');
+
+    if (subtotalEl) subtotalEl.textContent = `₦${subtotal.toLocaleString()}`;
+    if (totalEl) totalEl.textContent = `₦${grandTotal.toLocaleString()}`;
+  };
+
+  // Intercept view navigation
+  if (typeof window.switchView === 'function') {
+    const origSwitch = window.switchView;
     window.switchView = function(viewId) {
       try { localStorage.setItem(VIEW_KEY, viewId); } catch(e) {}
-      originalSwitch(viewId);
+      origSwitch(viewId);
       if (viewId === 'cart' || viewId === 'cart-view') {
-        restoreAndRenderCart();
+        window.renderCartView();
       }
     };
-    window._switchFixed = true;
   }
 
-  // Page refresh execution strategy
-  function onPageRefresh() {
-    restoreAndRenderCart();
-
+  // Restore active view on refresh and fire new renderCartView
+  function initOnLoad() {
     try {
-      const activeView = localStorage.getItem(VIEW_KEY);
-      if (activeView && typeof window.switchView === 'function') {
-        window.switchView(activeView);
-        if (activeView === 'cart' || activeView === 'cart-view') {
-          restoreAndRenderCart();
-        }
+      const savedView = localStorage.getItem(VIEW_KEY);
+      if (savedView && typeof window.switchView === 'function') {
+        window.switchView(savedView);
       }
     } catch(e) {}
+
+    window.renderCartView();
   }
 
-  // Replace intrusive alert popups with silent bottom toasts
+  // Toast notification system replacing harsh alerts
   window.alert = function(msg) {
     let toast = document.getElementById('poshella-toast');
     if (!toast) {
@@ -64,8 +118,8 @@
   };
 
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', onPageRefresh);
+    document.addEventListener('DOMContentLoaded', initOnLoad);
   } else {
-    onPageRefresh();
+    initOnLoad();
   }
 })();
