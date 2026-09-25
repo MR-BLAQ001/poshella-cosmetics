@@ -1,38 +1,53 @@
 (function() {
   const VIEW_KEY = 'poshella_saved_page';
 
-  function initApp() {
-    // 1. Force cart view render using the exact function name from index.html
-    if (typeof window.renderCartView === 'function') {
-      window.renderCartView();
-    }
-
-    // 2. Restore active page view on refresh
+  // 1. Core function to force load localStorage into cart array before rendering
+  function syncAndRenderCart() {
+    const rawCart = localStorage.getItem('poshella_cart') || localStorage.getItem('cart') || '[]';
     try {
-      const savedView = localStorage.getItem(VIEW_KEY);
-      if (savedView && typeof window.switchView === 'function') {
-        window.switchView(savedView);
-        if ((savedView === 'cart' || savedView === 'cart-view') && typeof window.renderCartView === 'function') {
-          window.renderCartView();
+      const parsedCart = JSON.parse(rawCart);
+      if (Array.isArray(parsedCart)) {
+        // Sync global cart variable in index.html if present
+        if (typeof window.cart !== 'undefined') {
+          window.cart = parsedCart;
         }
       }
     } catch(e) {}
+
+    if (typeof window.renderCartView === 'function') {
+      window.renderCartView();
+    }
   }
 
-  // Intercept view switching to always trigger renderCartView when opening Cart
+  // 2. Intercept switchView to run syncAndRenderCart
   if (typeof window.switchView === 'function' && !window._wrapped) {
     const origSwitch = window.switchView;
     window.switchView = function(viewId) {
       try { localStorage.setItem(VIEW_KEY, viewId); } catch(e) {}
       origSwitch(viewId);
-      if ((viewId === 'cart' || viewId === 'cart-view') && typeof window.renderCartView === 'function') {
-        window.renderCartView();
+      if (viewId === 'cart' || viewId === 'cart-view') {
+        syncAndRenderCart();
       }
     };
     window._wrapped = true;
   }
 
-  // Intercept browser alerts to display silent toast notifications
+  // 3. Page load initialization
+  function initApp() {
+    syncAndRenderCart();
+
+    try {
+      const savedView = localStorage.getItem(VIEW_KEY);
+      if (savedView && typeof window.switchView === 'function') {
+        window.switchView(savedView);
+        if (savedView === 'cart' || savedView === 'cart-view') {
+          syncAndRenderCart();
+        }
+      }
+    } catch(e) {}
+  }
+
+  // 4. Toast alert replacement
   window.alert = function(msg) {
     let toast = document.getElementById('poshella-toast');
     if (!toast) {
