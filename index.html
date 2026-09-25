@@ -13,7 +13,7 @@
       position: sticky; top: 0; z-index: 1000; background: #121212; padding: 10px 14px; border-bottom: 1px solid #222;
     }
     .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-    .brand-name { font-size: 1.1rem; font-weight: 800; color: #ff2a75; letter-spacing: 0.5px; }
+    .brand-name { font-size: 1.1rem; font-weight: 800; color: #ff2a75; letter-spacing: 0.5px; cursor: pointer; }
     
     .search-box {
       display: flex; align-items: center; background: #1e1e1e; border-radius: 20px; padding: 8px 14px; border: 1px solid #333;
@@ -46,7 +46,7 @@
     .product-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; padding: 10px; }
     
     .product-card {
-      background: #1e1e1e; border-radius: 8px; overflow: hidden; border: 1px solid #2a2a2a; display: flex; flex-direction: column; justify-content: space-between;
+      background: #1e1e1e; border-radius: 8px; overflow: hidden; border: 1px solid #2a2a2a; display: flex; flex-direction: column; justify-content: space-between; cursor: pointer;
     }
     .product-card img { width: 100%; height: 130px; object-fit: cover; background: #222; }
     .product-info { padding: 8px; }
@@ -56,66 +56,75 @@
       width: 100%; background: #ff2a75; color: #fff; border: none; padding: 7px; border-radius: 6px; font-weight: bold; font-size: 0.75rem; cursor: pointer;
     }
 
-    /* ACCOUNT DASHBOARD VIEW (MATCHING JUMIA LAYOUT) */
+    /* PRODUCT DETAILS PAGE VIEW */
+    .details-page { display: none; background: #0e0e0e; }
+    .details-page.active { display: block; }
+
+    .toast-banner {
+      background: #2e7d32; color: #fff; padding: 10px 14px; font-size: 0.8rem; font-weight: bold; display: flex; justify-content: space-between; align-items: center; transition: all 0.3s ease;
+    }
+    .toast-banner.hidden { display: none; }
+
+    .product-detail-img { width: 100%; max-height: 320px; object-fit: cover; background: #181818; display: block; }
+    
+    .p-detail-content { background: #141414; padding: 16px; border-bottom: 1px solid #262626; }
+    .p-detail-title { font-size: 1.05rem; font-weight: bold; color: #fff; margin-bottom: 6px; line-height: 1.3; }
+    .p-detail-brand { font-size: 0.75rem; color: #888; margin-bottom: 10px; }
+    .p-detail-brand span { color: #ff2a75; }
+    .p-detail-price { font-size: 1.3rem; font-weight: 800; color: #ff2a75; margin-bottom: 6px; }
+    .p-detail-stock { font-size: 0.75rem; color: #4caf50; font-weight: bold; margin-bottom: 8px; }
+    .p-detail-shipping { font-size: 0.75rem; color: #aaa; background: #1c1c1c; padding: 8px; border-radius: 6px; border: 1px solid #2a2a2a; margin-bottom: 12px; }
+
+    .variation-box { margin-top: 10px; }
+    .variation-title { font-size: 0.75rem; color: #888; font-weight: bold; margin-bottom: 6px; text-transform: uppercase; }
+    .variation-select { background: #222; color: #fff; border: 1px solid #333; padding: 8px 12px; border-radius: 6px; font-size: 0.85rem; width: 80px; }
+
+    .p-detail-promotions { background: #141414; padding: 14px 16px; margin-top: 10px; border-top: 1px solid #222; border-bottom: 1px solid #222; }
+    .promo-item { font-size: 0.8rem; color: #ddd; display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+    .promo-item:last-child { margin-bottom: 0; }
+
+    .similar-products-section { padding: 16px 12px; }
+    .similar-title { font-size: 0.95rem; font-weight: bold; color: #ff2a75; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+    /* BOTTOM FIXED DETAIL ACTION BAR */
+    .detail-bottom-bar {
+      position: fixed; bottom: 0; left: 0; width: 100%; background: #121212; border-top: 1px solid #222; display: flex; align-items: center; padding: 8px 12px; gap: 10px; z-index: 1000;
+    }
+    .btn-detail-icon { background: #1e1e1e; border: 1px solid #333; color: #fff; width: 42px; height: 42px; border-radius: 8px; display: flex; justify-content: center; align-items: center; font-size: 1.1rem; cursor: pointer; }
+    .btn-detail-add-cart { flex: 1; background: #ff2a75; color: #fff; border: none; height: 42px; border-radius: 8px; font-weight: bold; font-size: 0.9rem; cursor: pointer; }
+
+    /* ACCOUNT DASHBOARD VIEW */
     .account-page { display: none; background: #0e0e0e; }
     .account-page.active { display: block; }
-
     .user-welcome-card { background: #181818; padding: 16px; border-bottom: 1px solid #262626; }
     .welcome-title { font-size: 1.1rem; font-weight: bold; color: #ffffff; }
     .welcome-email { font-size: 0.8rem; color: #ff2a75; margin-top: 2px; }
     .credit-balance { font-size: 0.85rem; color: #aaa; margin-top: 10px; display: flex; align-items: center; gap: 6px; }
-    .credit-balance strong { color: #ffffff; }
-
     .support-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 12px 16px; background: #121212; border-bottom: 1px solid #222; }
-    .btn-live-chat {
-      background: #ff2a75; color: #fff; border: none; padding: 10px; border-radius: 6px; font-weight: bold; font-size: 0.85rem; display: flex; align-items: center; justify-content: center; gap: 6px; cursor: pointer;
-    }
-    .btn-whatsapp {
-      background: #1e1e1e; color: #25D366; border: 1px solid #25D366; padding: 10px; border-radius: 6px; font-weight: bold; font-size: 0.85rem; display: flex; align-items: center; justify-content: center; gap: 6px; cursor: pointer;
-    }
-
+    .btn-live-chat { background: #ff2a75; color: #fff; border: none; padding: 10px; border-radius: 6px; font-weight: bold; font-size: 0.85rem; cursor: pointer; }
+    .btn-whatsapp { background: #1e1e1e; color: #25D366; border: 1px solid #25D366; padding: 10px; border-radius: 6px; font-weight: bold; font-size: 0.85rem; cursor: pointer; }
     .menu-section-header { font-size: 0.75rem; color: #888; text-transform: uppercase; padding: 14px 16px 6px; font-weight: bold; background: #0a0a0a; }
     .menu-group { background: #141414; border-top: 1px solid #222; border-bottom: 1px solid #222; }
-    .menu-item {
-      display: flex; justify-content: space-between; align-items: center; padding: 13px 16px; border-bottom: 1px solid #1f1f1f; color: #ddd; font-size: 0.85rem; cursor: pointer;
-    }
-    .menu-item:last-child { border-bottom: none; }
+    .menu-item { display: flex; justify-content: space-between; align-items: center; padding: 13px 16px; border-bottom: 1px solid #1f1f1f; color: #ddd; font-size: 0.85rem; cursor: pointer; }
     .menu-item-left { display: flex; align-items: center; gap: 12px; }
-    .menu-item-left span { font-size: 1.1rem; }
-    .menu-arrow { color: #666; font-size: 0.9rem; }
 
-    .logout-btn-container { text-align: center; padding: 24px 16px; background: #0e0e0e; }
-    .logout-text-btn { color: #ff2a75; font-size: 0.9rem; font-weight: bold; cursor: pointer; text-decoration: underline; }
-
-    /* BOTTOM APP NAVIGATION */
+    /* BOTTOM NAV */
     .bottom-nav {
       position: fixed; bottom: 0; left: 0; width: 100%; background: #121212; border-top: 1px solid #222; display: flex; justify-content: space-around; padding: 8px 0; z-index: 1000;
     }
     .nav-item { text-align: center; color: #888; font-size: 0.65rem; text-decoration: none; cursor: pointer; position: relative; }
     .nav-item.active { color: #ff2a75; }
     .nav-item span { display: block; font-size: 1.2rem; margin-bottom: 2px; }
-    .badge {
-      position: absolute; top: -3px; right: 12px; background: #ff2a75; color: #fff; font-size: 0.6rem; padding: 2px 5px; border-radius: 10px; font-weight: bold;
-    }
+    .badge { position: absolute; top: -3px; right: 12px; background: #ff2a75; color: #fff; font-size: 0.6rem; padding: 2px 5px; border-radius: 10px; font-weight: bold; }
 
     /* MODALS */
-    .modal-overlay {
-      position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: flex; justify-content: center; align-items: center; z-index: 9999;
-    }
+    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: flex; justify-content: center; align-items: center; z-index: 9999; }
     .modal-overlay.hidden { display: none; }
-    .auth-modal {
-      background: #181818; color: #fff; padding: 22px; border-radius: 14px; width: 88%; max-width: 320px; border: 1px solid #333; text-align: center; position: relative;
-    }
+    .auth-modal { background: #181818; color: #fff; padding: 22px; border-radius: 14px; width: 88%; max-width: 320px; border: 1px solid #333; text-align: center; position: relative; }
     .auth-modal h3 { color: #ff2a75; margin-bottom: 12px; font-size: 1.1rem; }
-    .auth-modal input {
-      width: 100%; padding: 10px; margin: 5px 0 10px; border-radius: 6px; border: 1px solid #333; background: #222; color: #fff; font-size: 0.85rem; box-sizing: border-box;
-    }
-    .auth-modal button.submit-btn {
-      width: 100%; padding: 10px; background: #ff2a75; border: none; border-radius: 6px; color: #fff; font-weight: bold; cursor: pointer; margin-top: 5px;
-    }
+    .auth-modal input { width: 100%; padding: 10px; margin: 5px 0 10px; border-radius: 6px; border: 1px solid #333; background: #222; color: #fff; font-size: 0.85rem; box-sizing: border-box; }
+    .auth-modal button.submit-btn { width: 100%; padding: 10px; background: #ff2a75; border: none; border-radius: 6px; color: #fff; font-weight: bold; cursor: pointer; margin-top: 5px; }
     .close-modal { position: absolute; top: 10px; right: 14px; background: none; border: none; color: #888; font-size: 1.4rem; cursor: pointer; }
-    .toggle-auth { margin-top: 10px; font-size: 0.75rem; color: #aaa; }
-    .toggle-auth span { color: #ff2a75; cursor: pointer; text-decoration: underline; }
   </style>
 </head>
 <body>
@@ -123,7 +132,7 @@
   <!-- STICKY HEADER WITH SEARCH -->
   <header class="sticky-header">
     <div class="top-bar">
-      <span class="brand-name">POSHELLA</span>
+      <span class="brand-name" onclick="switchView('home')">POSHELLA</span>
       <span style="font-size: 0.75rem; color: #aaa;">📞 Call to Order</span>
     </div>
     <div class="search-box">
@@ -132,9 +141,8 @@
     </div>
   </header>
 
-  <!-- MAIN HOME VIEW CONTAINER -->
+  <!-- HOME VIEW -->
   <main id="homeView">
-    <!-- BANNER CAROUSEL -->
     <div class="banner-container">
       <div class="banner-card">
         <h2>Beauty Festival ✨</h2>
@@ -143,55 +151,72 @@
       </div>
     </div>
 
-    <!-- QUICK ACTION TILES -->
     <div class="quick-tiles">
-      <div class="tile">
-        <span>💄</span>
-        <p>MakeUp</p>
-      </div>
-      <div class="tile">
-        <span>✨</span>
-        <p>Glow Set</p>
-      </div>
-      <div class="tile">
-        <span>🚚</span>
-        <p>Free Delivery</p>
-      </div>
+      <div class="tile"><span>💄</span><p>MakeUp</p></div>
+      <div class="tile"><span>✨</span><p>Glow Set</p></div>
+      <div class="tile"><span>🚚</span><p>Free Delivery</p></div>
     </div>
 
-    <!-- FLASH SALES SECTION -->
     <div class="flash-container">
       <div class="flash-sale-header">
         <span>⚡ Flash Sales</span>
         <span id="countdown">14h : 40m : 49s</span>
       </div>
-      <div class="product-grid">
-        
-        <div class="product-card">
-          <img src="https://images.unsplash.com/photo-1556228720-195a672e8a03?w=300" alt="Glow Body Cream">
-          <div class="product-info">
-            <div class="product-title">Glow Body Cream - 250ml</div>
-            <div class="product-price">₦5,000</div>
-            <button class="add-cart-btn" onclick="addToCart('Glow Body Cream', 5000)">Add to Cart</button>
-          </div>
-        </div>
-
-        <div class="product-card">
-          <img src="https://images.unsplash.com/photo-1586495777744-4413f21062fa?w=300" alt="Matte Lipstick">
-          <div class="product-info">
-            <div class="product-title">Matte Lipstick - Velvet Red</div>
-            <div class="product-price">₦3,500</div>
-            <button class="add-cart-btn" onclick="addToCart('Matte Lipstick', 3500)">Add to Cart</button>
-          </div>
-        </div>
-
+      <div class="product-grid" id="mainProductGrid">
+        <!-- Rendered dynamically via JS -->
       </div>
     </div>
   </main>
 
-  <!-- ACCOUNT PAGE VIEW (EXACT JUMIA LAYOUT IN POSHELLA COLORS) -->
+  <!-- PRODUCT DETAILS VIEW PAGE -->
+  <section id="detailsView" class="details-page">
+    <div id="toastBanner" class="toast-banner hidden">
+      <span>✓ Cart successfully updated</span>
+      <span style="cursor:pointer;" onclick="closeToast()">✕</span>
+    </div>
+
+    <img id="detailImg" src="" class="product-detail-img" alt="Product Image">
+
+    <div class="p-detail-content">
+      <div class="p-detail-title" id="detailTitle"></div>
+      <div class="p-detail-brand">Brand: <span>Poshella Luxury</span> | Similar products from Poshella</div>
+      <div class="p-detail-price" id="detailPrice"></div>
+      <div class="p-detail-stock">In stock</div>
+      <div class="p-detail-shipping">+ shipping from ₦1,500 to Lagos / Port Harcourt / Abuja</div>
+
+      <div class="variation-box">
+        <div class="variation-title">VARIATION</div>
+        <select class="variation-select">
+          <option>1</option>
+          <option>2</option>
+          <option>3</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="p-detail-promotions">
+      <div class="promo-item">⭐ Call 08012345678 To Place Your Order</div>
+      <div class="promo-item">🚚 Enjoy cheaper shipping fees when ordering set items</div>
+    </div>
+
+    <!-- SIMILAR PRODUCTS SECTION BELOW PRODUCT DETAILS -->
+    <div class="similar-products-section">
+      <div class="similar-title">Similar Products You May Like</div>
+      <div class="product-grid" id="similarProductGrid">
+        <!-- Rendered dynamically -->
+      </div>
+    </div>
+
+    <!-- FIXED BOTTOM BAR ON DETAIL VIEW -->
+    <div class="detail-bottom-bar">
+      <div class="btn-detail-icon" onclick="switchView('home')">🏠</div>
+      <div class="btn-detail-icon" onclick="window.location.href='tel:08012345678'">📞</div>
+      <button class="btn-detail-add-cart" id="detailAddToCartBtn">Add To Cart</button>
+    </div>
+  </section>
+
+  <!-- ACCOUNT PAGE VIEW -->
   <section id="accountView" class="account-page">
-    
     <div class="user-welcome-card">
       <div class="welcome-title" id="welcomeUserText">Welcome Guest!</div>
       <div class="welcome-email" id="userEmailText">Sign in to manage your account</div>
@@ -207,96 +232,40 @@
 
     <div class="menu-section-header">Need Assistance?</div>
     <div class="menu-group">
-      <div class="menu-item">
-        <div class="menu-item-left"><span>ℹ️</span> Help & Support</div>
-        <div class="menu-arrow">❯</div>
-      </div>
+      <div class="menu-item"><div class="menu-item-left"><span>ℹ️</span> Help & Support</div><div>❯</div></div>
     </div>
 
     <div class="menu-section-header">My Poshella Account</div>
     <div class="menu-group">
-      <div class="menu-item">
-        <div class="menu-item-left"><span>📦</span> Orders</div>
-        <div class="menu-arrow">❯</div>
-      </div>
-      <div class="menu-item">
-        <div class="menu-item-left"><span>✉️</span> Inbox</div>
-        <div class="menu-arrow">❯</div>
-      </div>
-      <div class="menu-item">
-        <div class="menu-item-left"><span>📝</span> Ratings & Reviews</div>
-        <div class="menu-arrow">❯</div>
-      </div>
-      <div class="menu-item">
-        <div class="menu-item-left"><span>🎟️</span> Vouchers</div>
-        <div class="menu-arrow">❯</div>
-      </div>
-      <div class="menu-item">
-        <div class="menu-item-left"><span>❤️</span> Wishlist</div>
-        <div class="menu-arrow">❯</div>
-      </div>
-      <div class="menu-item">
-        <div class="menu-item-left"><span>🏬</span> Followed Brands</div>
-        <div class="menu-arrow">❯</div>
-      </div>
-      <div class="menu-item">
-        <div class="menu-item-left"><span>🕒</span> Recently Viewed</div>
-        <div class="menu-arrow">❯</div>
-      </div>
+      <div class="menu-item"><div class="menu-item-left"><span>📦</span> Orders</div><div>❯</div></div>
+      <div class="menu-item"><div class="menu-item-left"><span>✉️</span> Inbox</div><div>❯</div></div>
+      <div class="menu-item"><div class="menu-item-left"><span>📝</span> Ratings & Reviews</div><div>❯</div></div>
+      <div class="menu-item"><div class="menu-item-left"><span>🎟️</span> Vouchers</div><div>❯</div></div>
+      <div class="menu-item"><div class="menu-item-left"><span>❤️</span> Wishlist</div><div>❯</div></div>
     </div>
 
-    <div class="menu-section-header">My Settings</div>
-    <div class="menu-group">
-      <div class="menu-item">
-        <div class="menu-item-left"><span>📍</span> Address Book</div>
-        <div class="menu-arrow">❯</div>
-      </div>
-      <div class="menu-item">
-        <div class="menu-item-left"><span>👤</span> Account Management</div>
-        <div class="menu-arrow">❯</div>
-      </div>
-      <div class="menu-item">
-        <div class="menu-item-left"><span>🔒</span> Close Account</div>
-        <div class="menu-arrow">❯</div>
-      </div>
-      <div class="menu-item">
-        <div class="menu-item-left"><span>🔔</span> Notification Preferences</div>
-        <div class="menu-arrow">❯</div>
-      </div>
-      <div class="menu-item">
-        <div class="menu-item-left"><span>🛡️</span> Privacy Policy</div>
-        <div class="menu-arrow">❯</div>
-      </div>
+    <div style="text-align: center; padding: 24px 16px;">
+      <span style="color:#ff2a75; font-weight:bold; cursor:pointer;" onclick="handleLogoutClick()">Logout</span>
     </div>
-
-    <div class="logout-btn-container" id="logoutContainer">
-      <span class="logout-text-btn" onclick="handleLogoutClick()">Logout</span>
-    </div>
-
   </section>
 
   <!-- BOTTOM APP NAVIGATION -->
-  <nav class="bottom-nav">
+  <nav class="bottom-nav" id="mainBottomNav">
     <div class="nav-item active" id="navHome" onclick="switchView('home')">
-      <span>🏠</span>
-      Home
+      <span>🏠</span> Home
     </div>
     <div class="nav-item" id="navCategories">
-      <span>📋</span>
-      Categories
+      <span>📋</span> Categories
     </div>
     <div class="nav-item" id="navCart" onclick="openCart()">
-      <span>🛒</span>
-      Cart
-      <span class="badge" id="cartBadge">0</span>
+      <span>🛒</span> Cart <span class="badge" id="cartBadge">0</span>
     </div>
     <div class="nav-item" id="navAccount" onclick="switchView('account')">
-      <span>👤</span>
-      Account
+      <span>👤</span> Account
     </div>
   </nav>
 
-  <!-- AUTHENTICATION MODAL (FOR UNAUTHENTICATED USERS) -->
+  <!-- AUTHENTICATION MODAL -->
   <div id="authModal" class="modal-overlay hidden">
     <div class="auth-modal">
       <button class="close-modal" onclick="closeAuthModal()">&times;</button>
@@ -326,149 +295,108 @@
 
         <button type="submit" class="submit-btn" id="submitAuthBtn">Login</button>
       </form>
-      
-      <div class="toggle-auth" id="authToggleText">
-        Don't have an account? <span onclick="switchAuthMode('register')">Create Account</span>
-      </div>
     </div>
   </div>
 
   <script>
     const SESSION_MS = 60 * 60 * 1000;
-    let currentAuthMode = 'login';
     let cartCount = 0;
+    let currentSelectedProduct = null;
 
-    function getUsers() { return JSON.parse(localStorage.getItem('poshella_users')) || []; }
-    function saveUsers(users) { localStorage.setItem('poshella_users', JSON.stringify(users)); }
+    const productsDatabase = [
+      { id: 1, name: "Glow Body Cream - 250ml", price: 5000, img: "https://images.unsplash.com/photo-1556228720-195a672e8a03?w=500" },
+      { id: 2, name: "Matte Lipstick - Velvet Red", price: 3500, img: "https://images.unsplash.com/photo-1586495777744-4413f21062fa?w=500" },
+      { id: 3, name: "Hydrating Facial Serum 50ml", price: 7500, img: "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=500" },
+      { id: 4, name: "Vitamin C Radiance Mask", price: 6000, img: "https://images.unsplash.com/photo-1567928254714-a74b06a88b50?w=500" },
+      { id: 5, name: "Luxury Organic Face Oil", price: 9000, img: "https://images.unsplash.com/photo-1608248597260-6521e847c295?w=500" },
+      { id: 6, name: "Gentle Cleansing Gel 200ml", price: 4500, img: "https://images.unsplash.com/photo-1556228720-195a672e8a03?w=500" }
+    ];
 
-    function getActiveSession() {
-      const session = JSON.parse(localStorage.getItem('poshella_session'));
-      if (!session) return null;
-      if (new Date().getTime() - session.loginTimestamp < SESSION_MS) return session;
-      localStorage.removeItem('poshella_session');
-      return null;
+    function renderMainGrid() {
+      const grid = document.getElementById('mainProductGrid');
+      grid.innerHTML = productsDatabase.map(p => `
+        <div class="product-card" onclick="openProductDetail(${p.id})">
+          <img src="${p.img}" alt="${p.name}">
+          <div class="product-info">
+            <div class="product-title">${p.name}</div>
+            <div class="product-price">₦${p.price.toLocaleString()}</div>
+            <button class="add-cart-btn" onclick="event.stopPropagation(); addToCart('${p.name}')">Add to Cart</button>
+          </div>
+        </div>
+      `).join('');
     }
+
+    function openProductDetail(productId) {
+      const prod = productsDatabase.find(p => p.id === productId);
+      if (!prod) return;
+
+      currentSelectedProduct = prod;
+
+      document.getElementById('detailImg').src = prod.img;
+      document.getElementById('detailTitle').textContent = prod.name;
+      document.getElementById('detailPrice').textContent = `₦${prod.price.toLocaleString()}`;
+      document.getElementById('detailAddToCartBtn').onclick = () => addToCart(prod.name);
+
+      // Filter similar products (excluding the current one)
+      const similarProducts = productsDatabase.filter(p => p.id !== productId);
+      const similarGrid = document.getElementById('similarProductGrid');
+
+      similarGrid.innerHTML = similarProducts.map(p => `
+        <div class="product-card" onclick="openProductDetail(${p.id}); window.scrollTo({top: 0, behavior: 'smooth'});">
+          <img src="${p.img}" alt="${p.name}">
+          <div class="product-info">
+            <div class="product-title">${p.name}</div>
+            <div class="product-price">₦${p.price.toLocaleString()}</div>
+            <button class="add-cart-btn" onclick="event.stopPropagation(); addToCart('${p.name}')">Add to Cart</button>
+          </div>
+        </div>
+      `).join('');
+
+      switchView('details');
+      window.scrollTo(0, 0);
+    }
+
+    function addToCart(name) {
+      cartCount++;
+      document.getElementById('cartBadge').textContent = cartCount;
+      showToast();
+    }
+
+    function showToast() {
+      const toast = document.getElementById('toastBanner');
+      toast.classList.remove('hidden');
+      setTimeout(() => { toast.classList.add('hidden'); }, 3000);
+    }
+
+    function closeToast() { document.getElementById('toastBanner').classList.add('hidden'); }
 
     function switchView(target) {
       const homeView = document.getElementById('homeView');
       const accountView = document.getElementById('accountView');
-      const navHome = document.getElementById('navHome');
-      const navAccount = document.getElementById('navAccount');
+      const detailsView = document.getElementById('detailsView');
+      const mainBottomNav = document.getElementById('mainBottomNav');
 
-      if (target === 'account') {
-        const session = getActiveSession();
-        if (!session) {
-          openAuthModal();
-          return;
-        }
-        homeView.style.display = 'none';
+      homeView.style.display = 'none';
+      accountView.classList.remove('active');
+      detailsView.classList.remove('active');
+
+      if (target === 'details') {
+        detailsView.classList.add('active');
+        mainBottomNav.style.display = 'none'; // Hide general nav for detail page's action bar
+      } else if (target === 'account') {
         accountView.classList.add('active');
-        navHome.classList.remove('active');
-        navAccount.classList.add('active');
-        renderAccountDetails(session);
+        mainBottomNav.style.display = 'flex';
       } else {
         homeView.style.display = 'block';
-        accountView.classList.remove('active');
-        navHome.classList.add('active');
-        navAccount.classList.remove('active');
+        mainBottomNav.style.display = 'flex';
       }
     }
 
-    function renderAccountDetails(session) {
-      document.getElementById('welcomeUserText').textContent = `Welcome ${session.username}!`;
-      document.getElementById('userEmailText').textContent = session.email;
-    }
+    function openCart() { alert(`Cart has ${cartCount} items.`); }
 
-    function addToCart(name, price) {
-      cartCount++;
-      document.getElementById('cartBadge').textContent = cartCount;
-      alert(`${name} added to cart!`);
-    }
-
-    function openCart() {
-      alert(`Cart has ${cartCount} items.`);
-    }
-
-    function switchAuthMode(mode) {
-      currentAuthMode = mode;
-      const modalTitle = document.getElementById('modalTitle');
-      const usernameGroup = document.getElementById('usernameGroup');
-      const loginIdentifierGroup = document.getElementById('loginIdentifierGroup');
-      const emailPhoneRegGroup = document.getElementById('emailPhoneRegGroup');
-      const submitAuthBtn = document.getElementById('submitAuthBtn');
-      const authToggleText = document.getElementById('authToggleText');
-
-      document.getElementById('authForm').reset();
-
-      if (mode === 'login') {
-        modalTitle.textContent = "Login to Account";
-        usernameGroup.classList.add('hidden');
-        loginIdentifierGroup.classList.remove('hidden');
-        emailPhoneRegGroup.classList.add('hidden');
-        submitAuthBtn.textContent = "Login";
-        authToggleText.innerHTML = `Don't have an account? <span onclick="switchAuthMode('register')">Create Account</span>`;
-      } else {
-        modalTitle.textContent = "Create Account";
-        usernameGroup.classList.remove('hidden');
-        loginIdentifierGroup.classList.add('hidden');
-        emailPhoneRegGroup.classList.remove('hidden');
-        submitAuthBtn.textContent = "Register & Login";
-        authToggleText.innerHTML = `Already have an account? <span onclick="switchAuthMode('login')">Login</span>`;
-      }
-    }
-
-    function openAuthModal() {
-      switchAuthMode('login');
-      document.getElementById('authModal').classList.remove('hidden');
-    }
-
-    function closeAuthModal() {
-      document.getElementById('authModal').classList.add('hidden');
-    }
-
-    function handleAuthSubmit(e) {
-      e.preventDefault();
-      const users = getUsers();
-
-      if (currentAuthMode === 'register') {
-        const username = document.getElementById('regUsername').value.trim();
-        const email = document.getElementById('regEmail').value.trim().toLowerCase();
-        const phone = document.getElementById('regPhone').value.trim();
-        const password = document.getElementById('authPassword').value;
-
-        if (users.some(u => u.username.toLowerCase() === username.toLowerCase())) { alert("Username taken!"); return; }
-        if (users.some(u => u.email.toLowerCase() === email)) { alert("Email already exists!"); return; }
-
-        const newUser = { username, email, phone, password };
-        users.push(newUser); saveUsers(users);
-
-        const session = { ...newUser, loginTimestamp: new Date().getTime() };
-        localStorage.setItem('poshella_session', JSON.stringify(session));
-        closeAuthModal();
-        switchView('account');
-
-      } else if (currentAuthMode === 'login') {
-        const identifier = document.getElementById('loginIdentifier').value.trim().toLowerCase();
-        const password = document.getElementById('authPassword').value;
-
-        const foundUser = users.find(u => (u.email.toLowerCase() === identifier || u.phone === identifier) && u.password === password);
-        if (foundUser) {
-          const session = { ...foundUser, loginTimestamp: new Date().getTime() };
-          localStorage.setItem('poshella_session', JSON.stringify(session));
-          closeAuthModal();
-          switchView('account');
-        } else {
-          alert("Invalid Email/Phone or Password!");
-        }
-      }
-    }
-
-    function handleLogoutClick() {
-      if (confirm("Are you sure you want to log out?")) {
-        localStorage.removeItem('poshella_session');
-        switchView('home');
-      }
-    }
+    window.addEventListener('DOMContentLoaded', () => {
+      renderMainGrid();
+    });
   </script>
 </body>
 </html>
