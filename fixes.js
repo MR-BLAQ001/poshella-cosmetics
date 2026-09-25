@@ -21,21 +21,37 @@
     } catch(e) {}
   }
 
-  // Clear Cart with confirmation prompt
+  // Clear Cart logic with confirmation window
   window.clearCart = function() {
-    const confirmClear = confirm("Are you sure you want to clear your cart?");
+    const confirmClear = window.confirm("Are you sure you want to clear your cart?");
     if (confirmClear) {
       saveCart([]);
+      if (typeof window.updateCartBadge === 'function') {
+        window.updateCartBadge();
+      }
       window.renderCartView();
-      if (typeof window.showToast === 'function') {
-        window.showToast("Cart cleared!");
-      } else if (typeof window.alert === 'function') {
-        window.alert("Cart cleared!");
+      if (typeof window.alert === 'function') {
+        window.alert("Cart cleared successfully!");
       }
     }
   };
 
-  // Add to cart with proper loose-matching product IDs
+  // GLOBAL CLICK DELEGATION: Intercept any tap on "Clear All" across the site
+  document.addEventListener('click', function(e) {
+    const target = e.target;
+    if (!target) return;
+
+    const text = (target.textContent || target.innerText || '').trim().toLowerCase();
+    const isClearAll = text === 'clear all' || target.classList.contains('clear-all') || target.id === 'clearCartBtn';
+
+    if (isClearAll) {
+      e.preventDefault();
+      e.stopPropagation();
+      window.clearCart();
+    }
+  }, true);
+
+  // Add to cart with loose product ID matching
   window.addToCart = function(productId) {
     if (typeof window.productsDatabase === 'undefined' || !Array.isArray(window.productsDatabase)) {
       return;
@@ -92,17 +108,7 @@
       subtotal += (price * qty);
     });
 
-    // Attach click handler to any "Clear All" button found on screen
-    document.querySelectorAll('.clear-all, [onclick*="clearCart"], button, a').forEach(el => {
-      if (el.textContent && el.textContent.trim().toLowerCase() === 'clear all') {
-        el.onclick = function(e) {
-          e.preventDefault();
-          window.clearCart();
-        };
-      }
-    });
-
-    // Badges & Header Title
+    // Update Badges & Header Title
     document.querySelectorAll('.cart-badge, [id*="cart-count"]').forEach(badge => {
       badge.textContent = totalUnits;
       badge.style.display = totalUnits > 0 ? 'inline-block' : 'none';
@@ -114,7 +120,7 @@
       }
     });
 
-    // Empty state
+    // Empty state display
     if (cart.length === 0) {
       if (container) {
         container.innerHTML = `
@@ -132,7 +138,7 @@
     if (summaryBox) summaryBox.style.display = 'block';
     if (timerBox) timerBox.style.display = 'flex';
 
-    // Render cart item rows
+    // Render cart items
     let itemsHtml = '';
     cart.forEach((item, index) => {
       const qty = parseInt(item.qty || item.quantity || 1, 10);
@@ -158,7 +164,7 @@
 
     if (container) container.innerHTML = itemsHtml;
 
-    // Price calculations
+    // Prices calculation
     const delivery = subtotal > 0 ? 1500 : 0;
     const grandTotal = subtotal + delivery;
 
@@ -205,7 +211,7 @@
     };
   }
 
-  // Initialization on page load
+  // Restore page view on load
   function init() {
     try {
       const savedView = localStorage.getItem(VIEW_KEY);
@@ -217,7 +223,7 @@
     window.renderCartView();
   }
 
-  // Soft toast replacement for alerts
+  // Soft toast replacement for native alert popups
   window.alert = function(msg) {
     let toast = document.getElementById('poshella-toast');
     if (!toast) {
