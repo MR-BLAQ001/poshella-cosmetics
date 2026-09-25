@@ -1,55 +1,67 @@
 (function() {
   const VIEW_KEY = 'poshella_saved_page';
 
-  // Helper to ensure window.cart is always synchronized with localStorage
-  function syncGlobalCart() {
+  function getCartData() {
     const rawCart = localStorage.getItem('poshella_cart') || localStorage.getItem('cart') || '[]';
     try {
-      const parsedCart = JSON.parse(rawCart);
-      if (Array.isArray(parsedCart)) {
-        window.cart = parsedCart;
-      }
+      return JSON.parse(rawCart);
     } catch(e) {
-      window.cart = window.cart || [];
+      return [];
     }
   }
 
-  // 1. MONKEY-PATCH renderCartView: Force cart sync EVERY TIME renderCartView is called
-  function patchRenderCartView() {
-    if (typeof window.renderCartView === 'function' && !window._renderCartViewPatched) {
-      const originalRender = window.renderCartView;
-      window.renderCartView = function() {
-        syncGlobalCart();
-        originalRender.apply(this, arguments);
-      };
-      window._renderCartViewPatched = true;
+  // Force-render items directly into DOM if cart array has items
+  function forceRenderCartItems() {
+    const cart = getCartData();
+    const container = document.getElementById('cartItemsContainer') || document.getElementById('cart-items');
+    
+    if (!container) return;
+
+    if (Array.isArray(cart) && cart.length > 0) {
+      let html = '';
+      let subtotal = 0;
+
+      cart.forEach((item, index) => {
+        const qty = parseInt(item.quantity || item.qty || 1, 10);
+        const unitPrice = parseFloat(item.unitPrice || item.price || 0);
+        const itemTotal = unitPrice * qty;
+        subtotal += itemTotal;
+
+        html += `
+          <div class="cart-item" style="display:flex; align-items:center; justify:space-between; background:#181818; padding:12px; margin-bottom:10px; border-radius:8px; border:1px solid #282828;">
+            <img src="${item.image || item.img || ''}" style="width:50px; height:50px; object-fit:cover; border-radius:6px; margin-right:12px;" onerror="this.style.display='none'">
+            <div style="flex:1;">
+              <h4 style="margin:0 0 4px 0; color:#fff; font-size:0.9rem;">${item.name || item.title || 'Product'}</h4>
+              <p style="margin:0; color:#ff2a75; font-weight:bold; font-size:0.85rem;">₦${(unitPrice || itemTotal).toLocaleString()}</p>
+            </div>
+            <div style="color:#aaa; font-size:0.85rem; font-weight:bold;">Qty: ${qty}</div>
+          </div>
+        `;
+      });
+
+      container.innerHTML = html;
+
+      // Ensure summary box is visible if present
+      const summaryBox = document.getElementById('cartSummary') || document.querySelector('.cart-summary');
+      if (summaryBox) summaryBox.style.display = 'block';
     }
   }
 
-  // 2. Intercept switchView
-  function patchSwitchView() {
-    if (typeof window.switchView === 'function' && !window._switchViewPatched) {
-      const origSwitch = window.switchView;
-      window.switchView = function(viewId) {
-        try { localStorage.setItem(VIEW_KEY, viewId); } catch(e) {}
-        origSwitch(viewId);
-        if (viewId === 'cart' || viewId === 'cart-view') {
-          syncGlobalCart();
-          if (typeof window.renderCartView === 'function') {
-            window.renderCartView();
-          }
-        }
-      };
-      window._switchViewPatched = true;
-    }
+  // Intercept view switching
+  if (typeof window.switchView === 'function' && !window._wrapped) {
+    const origSwitch = window.switchView;
+    window.switchView = function(viewId) {
+      try { localStorage.setItem(VIEW_KEY, viewId); } catch(e) {}
+      origSwitch(viewId);
+      if (viewId === 'cart' || viewId === 'cart-view') {
+        setTimeout(forceRenderCartItems, 50);
+      }
+    };
+    window._wrapped = true;
   }
 
-  // 3. Initialize immediately and restore active tab on refresh
+  // Restore on page load
   function init() {
-    syncGlobalCart();
-    patchRenderCartView();
-    patchSwitchView();
-
     try {
       const savedView = localStorage.getItem(VIEW_KEY);
       if (savedView && typeof window.switchView === 'function') {
@@ -57,13 +69,12 @@
       }
     } catch(e) {}
 
-    // Force one clean render after patches are applied
-    if (typeof window.renderCartView === 'function') {
-      window.renderCartView();
-    }
+    forceRenderCartItems();
+    setTimeout(forceRenderCartItems, 200);
+    setTimeout(forceRenderCartItems, 600);
   }
 
-  // 4. Toast alert replacement
+  // Toast replacements for alerts
   window.alert = function(msg) {
     let toast = document.getElementById('poshella-toast');
     if (!toast) {
@@ -77,8 +88,9 @@
     setTimeout(() => { toast.style.opacity = '0'; }, 2000);
   };
 
-  init();
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
   }
 })();
