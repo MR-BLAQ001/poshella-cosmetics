@@ -1,80 +1,55 @@
 (function() {
   const VIEW_KEY = 'poshella_saved_page';
+  const CART_KEY = 'poshella_cart';
 
-  function getCartData() {
-    const rawCart = localStorage.getItem('poshella_cart') || localStorage.getItem('cart') || '[]';
+  // Restore cart array globally and re-render the view
+  function restoreAndRenderCart() {
+    const rawData = localStorage.getItem(CART_KEY) || localStorage.getItem('cart') || '[]';
+    let savedCart = [];
     try {
-      return JSON.parse(rawCart);
+      savedCart = JSON.parse(rawData);
     } catch(e) {
-      return [];
+      savedCart = [];
+    }
+
+    // Force global window.cart variable to hold the stored items
+    window.cart = savedCart;
+
+    // Trigger the page's cart view renderer
+    if (typeof window.renderCartView === 'function') {
+      window.renderCartView();
     }
   }
 
-  // Force-render items directly into DOM if cart array has items
-  function forceRenderCartItems() {
-    const cart = getCartData();
-    const container = document.getElementById('cartItemsContainer') || document.getElementById('cart-items');
-    
-    if (!container) return;
-
-    if (Array.isArray(cart) && cart.length > 0) {
-      let html = '';
-      let subtotal = 0;
-
-      cart.forEach((item, index) => {
-        const qty = parseInt(item.quantity || item.qty || 1, 10);
-        const unitPrice = parseFloat(item.unitPrice || item.price || 0);
-        const itemTotal = unitPrice * qty;
-        subtotal += itemTotal;
-
-        html += `
-          <div class="cart-item" style="display:flex; align-items:center; justify:space-between; background:#181818; padding:12px; margin-bottom:10px; border-radius:8px; border:1px solid #282828;">
-            <img src="${item.image || item.img || ''}" style="width:50px; height:50px; object-fit:cover; border-radius:6px; margin-right:12px;" onerror="this.style.display='none'">
-            <div style="flex:1;">
-              <h4 style="margin:0 0 4px 0; color:#fff; font-size:0.9rem;">${item.name || item.title || 'Product'}</h4>
-              <p style="margin:0; color:#ff2a75; font-weight:bold; font-size:0.85rem;">₦${(unitPrice || itemTotal).toLocaleString()}</p>
-            </div>
-            <div style="color:#aaa; font-size:0.85rem; font-weight:bold;">Qty: ${qty}</div>
-          </div>
-        `;
-      });
-
-      container.innerHTML = html;
-
-      // Ensure summary box is visible if present
-      const summaryBox = document.getElementById('cartSummary') || document.querySelector('.cart-summary');
-      if (summaryBox) summaryBox.style.display = 'block';
-    }
-  }
-
-  // Intercept view switching
-  if (typeof window.switchView === 'function' && !window._wrapped) {
-    const origSwitch = window.switchView;
+  // Intercept view switching so navigation stays synced
+  if (typeof window.switchView === 'function' && !window._switchFixed) {
+    const originalSwitch = window.switchView;
     window.switchView = function(viewId) {
       try { localStorage.setItem(VIEW_KEY, viewId); } catch(e) {}
-      origSwitch(viewId);
+      originalSwitch(viewId);
       if (viewId === 'cart' || viewId === 'cart-view') {
-        setTimeout(forceRenderCartItems, 50);
+        restoreAndRenderCart();
       }
     };
-    window._wrapped = true;
+    window._switchFixed = true;
   }
 
-  // Restore on page load
-  function init() {
+  // Page refresh execution strategy
+  function onPageRefresh() {
+    restoreAndRenderCart();
+
     try {
-      const savedView = localStorage.getItem(VIEW_KEY);
-      if (savedView && typeof window.switchView === 'function') {
-        window.switchView(savedView);
+      const activeView = localStorage.getItem(VIEW_KEY);
+      if (activeView && typeof window.switchView === 'function') {
+        window.switchView(activeView);
+        if (activeView === 'cart' || activeView === 'cart-view') {
+          restoreAndRenderCart();
+        }
       }
     } catch(e) {}
-
-    forceRenderCartItems();
-    setTimeout(forceRenderCartItems, 200);
-    setTimeout(forceRenderCartItems, 600);
   }
 
-  // Toast replacements for alerts
+  // Replace intrusive alert popups with silent bottom toasts
   window.alert = function(msg) {
     let toast = document.getElementById('poshella-toast');
     if (!toast) {
@@ -89,8 +64,8 @@
   };
 
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
+    document.addEventListener('DOMContentLoaded', onPageRefresh);
   } else {
-    init();
+    onPageRefresh();
   }
 })();
