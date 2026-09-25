@@ -222,3 +222,36 @@
     }
   });
 })();
+
+// --- FIX: FORCE RE-RENDER CART ITEMS ON REFRESH ---
+(function() {
+  function forceCartRender() {
+    const rawCart = localStorage.getItem('poshella_cart') || localStorage.getItem('cart') || '[]';
+    let cart = [];
+    try {
+      cart = JSON.parse(rawCart);
+    } catch(e) {
+      cart = [];
+    }
+
+    if (cart.length > 0) {
+      if (typeof window.renderCart === 'function') {
+        window.renderCart();
+      } else {
+        // Fallback: If original renderCart is missing, trigger click on Cart tab to invoke default handler
+        const cartTab = document.querySelector('[onclick*="cart"], [onclick*="Cart"]');
+        if (cartTab) cartTab.click();
+      }
+    }
+  }
+
+  // Execute immediately when script loads and after DOM ready
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', forceCartRender);
+  } else {
+    forceCartRender();
+  }
+
+  // Re-check after 300ms to catch view persistence toggles
+  setTimeout(forceCartRender, 300);
+})();
