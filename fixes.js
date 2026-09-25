@@ -1,60 +1,57 @@
 (function() {
   const VIEW_KEY = 'poshella_saved_page';
 
-  // Helper to fetch and normalize cart items from all potential storage keys
-  function getCartData() {
-    let items = [];
-
-    // Try reading from all known cart keys
-    const keys = ['poshella_cart', 'cart', 'cartItems', 'user_cart'];
-    for (let key of keys) {
-      try {
-        const raw = localStorage.getItem(key);
-        if (raw) {
-          const parsed = JSON.parse(raw);
-          if (Array.isArray(parsed) && parsed.length > 0) {
-            items = parsed;
-            break;
-          }
-        }
-      } catch(e) {}
+  // 1. Sync global cart variable and storage keys
+  function syncCartState() {
+    let currentCart = [];
+    if (Array.isArray(window.cart)) {
+      currentCart = window.cart;
+    } else {
+      const raw = localStorage.getItem('cart') || localStorage.getItem('poshella_cart') || '[]';
+      try { currentCart = JSON.parse(raw); } catch(e) { currentCart = []; }
+      window.cart = currentCart;
     }
 
-    return items;
+    // Keep storage keys mirrored
+    try {
+      localStorage.setItem('cart', JSON.stringify(currentCart));
+      localStorage.setItem('poshella_cart', JSON.stringify(currentCart));
+    } catch(e) {}
+
+    return currentCart;
   }
 
-  // Master function to render cart items and calculate totals accurately
+  // 2. Overwrite renderCartView to calculate math and display all items accurately
   window.renderCartView = function() {
-    const container = document.getElementById('cartItemsContainer') || document.getElementById('cart-items') || document.querySelector('.cart-items-list');
+    const container = document.getElementById('cartItemsContainer') || document.getElementById('cart-items');
     const summaryBox = document.getElementById('cartSummary') || document.querySelector('.cart-summary');
     const timerBox = document.getElementById('cartTimer');
 
-    const cart = getCartData();
-    window.cart = cart;
+    const cart = syncCartState();
 
     let totalUnits = 0;
     let subtotal = 0;
 
     cart.forEach(item => {
-      const qty = parseInt(item.quantity || item.qty || item.count || 1, 10);
-      const price = parseFloat(item.price || item.unitPrice || item.cost || item.amount || 0);
+      const qty = parseInt(item.qty || item.quantity || 1, 10);
+      const price = parseFloat(item.price || item.unitPrice || 0);
       totalUnits += qty;
       subtotal += (price * qty);
     });
 
-    // 1. Update Header Title and Badges
-    document.querySelectorAll('.view-title, header h2, .cart-header-title, h2, h3').forEach(el => {
+    // Update Header Badges & Count
+    document.querySelectorAll('.cart-badge, [id*="cart-count"]').forEach(badge => {
+      badge.textContent = totalUnits;
+      badge.style.display = totalUnits > 0 ? 'inline-block' : 'none';
+    });
+
+    document.querySelectorAll('header h2, .view-title').forEach(el => {
       if (el.textContent && el.textContent.toLowerCase().includes('shopping cart')) {
         el.textContent = `Shopping Cart (${cart.length})`;
       }
     });
 
-    document.querySelectorAll('.cart-badge, [id*="cart-count"], .badge').forEach(badge => {
-      badge.textContent = totalUnits;
-      badge.style.display = totalUnits > 0 ? 'inline-block' : 'none';
-    });
-
-    // 2. Handle Empty State
+    // Empty state check
     if (!Array.isArray(cart) || cart.length === 0) {
       if (container) {
         container.innerHTML = `
@@ -72,13 +69,13 @@
     if (summaryBox) summaryBox.style.display = 'block';
     if (timerBox) timerBox.style.display = 'flex';
 
-    // 3. Build Item List for ALL selected items
+    // Render each item row from productsDatabase
     let itemsHtml = '';
     cart.forEach((item, index) => {
-      const qty = parseInt(item.quantity || item.qty || item.count || 1, 10);
-      const price = parseFloat(item.price || item.unitPrice || item.cost || item.amount || 0);
-      const name = item.name || item.title || item.productName || item.product_name || 'Product Item';
-      const imgSrc = item.image || item.img || item.src || item.imageUrl || '';
+      const qty = parseInt(item.qty || item.quantity || 1, 10);
+      const price = parseFloat(item.price || item.unitPrice || 0);
+      const name = item.name || item.title || 'Cosmetic Item';
+      const imgSrc = item.img || item.image || '';
 
       itemsHtml += `
         <div class="cart-item" style="display:flex; align-items:center; gap:12px; background:#181818; padding:12px; border-radius:10px; margin-bottom:10px; border:1px solid #282828;">
@@ -98,66 +95,79 @@
 
     if (container) container.innerHTML = itemsHtml;
 
-    // 4. Calculate Delivery and Grand Total
+    // Calculate Totals accurately
     const delivery = subtotal > 0 ? 1500 : 0;
     const grandTotal = subtotal + delivery;
 
-    // Update Price elements directly by ID or Text match
-    const subtotalEl = document.getElementById('cartSubtotal');
-    const totalEl = document.getElementById('cartTotal');
-
-    if (subtotalEl) subtotalEl.textContent = `₦${subtotal.toLocaleString()}`;
-    if (totalEl) totalEl.textContent = `₦${grandTotal.toLocaleString()}`;
-
-    // Fallback: scan text elements if IDs aren't set
-    document.querySelectorAll('div, p, span, td').forEach(el => {
+    // Direct text replace on target summary nodes
+    document.querySelectorAll('*').forEach(el => {
       if (el.children.length === 0) {
-        const txt = el.textContent.trim();
-        if (txt === 'Subtotal' && el.nextElementSibling) {
+        const text = el.textContent.trim();
+        if (text === 'Subtotal' && el.nextElementSibling) {
           el.nextElementSibling.textContent = `₦${subtotal.toLocaleString()}`;
         }
-        if (txt === 'Total' && el.nextElementSibling) {
+        if (text === 'Estimated Delivery' && el.nextElementSibling) {
+          el.nextElementSibling.textContent = `₦${delivery.toLocaleString()}`;
+        }
+        if (text === 'Total' && el.nextElementSibling) {
           el.nextElementSibling.textContent = `₦${grandTotal.toLocaleString()}`;
         }
       }
     });
   };
 
-  // Adjust item quantity (+ / -)
+  // Quantity modification (+ / -)
   window.changeCartQty = function(index, delta) {
-    let cart = getCartData();
+    let cart = syncCartState();
     if (cart[index]) {
-      let currentQty = parseInt(cart[index].quantity || cart[index].qty || cart[index].count || 1, 10);
+      let currentQty = parseInt(cart[index].qty || cart[index].quantity || 1, 10);
       currentQty += delta;
 
       if (currentQty <= 0) {
         cart.splice(index, 1);
       } else {
+        cart[index].qty = currentQty;
         if (cart[index].quantity !== undefined) cart[index].quantity = currentQty;
-        if (cart[index].qty !== undefined) cart[index].qty = currentQty;
-        if (cart[index].count !== undefined) cart[index].count = currentQty;
       }
 
-      const keys = ['poshella_cart', 'cart'];
-      keys.forEach(k => localStorage.setItem(k, JSON.stringify(cart)));
+      window.cart = cart;
+      syncCartState();
       window.renderCartView();
     }
   };
 
-  // Intercept view navigation
+  // 3. Intercept addToCart so every new item addition immediately triggers re-render
+  function patchAddToCart() {
+    if (typeof window.addToCart === 'function' && !window._addToCartPatched) {
+      const origAddToCart = window.addToCart;
+      window.addToCart = function(productId) {
+        origAddToCart(productId);
+        syncCartState();
+        if (typeof window.renderCartView === 'function') {
+          window.renderCartView();
+        }
+      };
+      window._addToCartPatched = true;
+    }
+  }
+
+  // Intercept switchView
   if (typeof window.switchView === 'function') {
     const origSwitch = window.switchView;
     window.switchView = function(viewId) {
       try { localStorage.setItem(VIEW_KEY, viewId); } catch(e) {}
       origSwitch(viewId);
       if (viewId === 'cart' || viewId === 'cart-view') {
-        setTimeout(window.renderCartView, 20);
+        window.renderCartView();
       }
     };
   }
 
-  // Restore active tab and render cart on page load
+  // Startup initializations
   function init() {
+    patchAddToCart();
+    syncCartState();
+
     try {
       const savedView = localStorage.getItem(VIEW_KEY);
       if (savedView && typeof window.switchView === 'function') {
@@ -168,7 +178,7 @@
     window.renderCartView();
   }
 
-  // Toast replacements for alerts
+  // Replace alert modal with soft floating toast
   window.alert = function(msg) {
     let toast = document.getElementById('poshella-toast');
     if (!toast) {
