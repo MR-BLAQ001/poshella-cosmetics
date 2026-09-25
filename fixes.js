@@ -1,45 +1,60 @@
 (function() {
   const VIEW_KEY = 'poshella_saved_page';
 
-  // OVERWRITE renderCartView with accurate calculations & controls
+  // Helper to fetch and normalize cart items from all potential storage keys
+  function getCartData() {
+    let items = [];
+
+    // Try reading from all known cart keys
+    const keys = ['poshella_cart', 'cart', 'cartItems', 'user_cart'];
+    for (let key of keys) {
+      try {
+        const raw = localStorage.getItem(key);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            items = parsed;
+            break;
+          }
+        }
+      } catch(e) {}
+    }
+
+    return items;
+  }
+
+  // Master function to render cart items and calculate totals accurately
   window.renderCartView = function() {
-    const container = document.getElementById('cartItemsContainer') || document.getElementById('cart-items');
+    const container = document.getElementById('cartItemsContainer') || document.getElementById('cart-items') || document.querySelector('.cart-items-list');
     const summaryBox = document.getElementById('cartSummary') || document.querySelector('.cart-summary');
     const timerBox = document.getElementById('cartTimer');
 
-    // Load cart
-    const rawCart = localStorage.getItem('poshella_cart') || localStorage.getItem('cart') || '[]';
-    let cart = [];
-    try {
-      cart = JSON.parse(rawCart);
-    } catch(e) {
-      cart = [];
-    }
+    const cart = getCartData();
     window.cart = cart;
 
     let totalUnits = 0;
     let subtotal = 0;
 
     cart.forEach(item => {
-      const qty = parseInt(item.quantity || item.qty || 1, 10);
-      const price = parseFloat(item.price || item.unitPrice || 0);
+      const qty = parseInt(item.quantity || item.qty || item.count || 1, 10);
+      const price = parseFloat(item.price || item.unitPrice || item.cost || item.amount || 0);
       totalUnits += qty;
       subtotal += (price * qty);
     });
 
-    // Update Header Title and Badges
-    document.querySelectorAll('.view-title, header h2, .cart-header-title').forEach(el => {
-      if (el.textContent.includes('Shopping Cart')) {
-        el.textContent = `Shopping Cart (${totalUnits})`;
+    // 1. Update Header Title and Badges
+    document.querySelectorAll('.view-title, header h2, .cart-header-title, h2, h3').forEach(el => {
+      if (el.textContent && el.textContent.toLowerCase().includes('shopping cart')) {
+        el.textContent = `Shopping Cart (${cart.length})`;
       }
     });
 
-    document.querySelectorAll('.cart-badge, [id*="cart-count"]').forEach(badge => {
+    document.querySelectorAll('.cart-badge, [id*="cart-count"], .badge').forEach(badge => {
       badge.textContent = totalUnits;
       badge.style.display = totalUnits > 0 ? 'inline-block' : 'none';
     });
 
-    // Handle Empty State
+    // 2. Handle Empty State
     if (!Array.isArray(cart) || cart.length === 0) {
       if (container) {
         container.innerHTML = `
@@ -57,17 +72,19 @@
     if (summaryBox) summaryBox.style.display = 'block';
     if (timerBox) timerBox.style.display = 'flex';
 
-    // Build Item List
+    // 3. Build Item List for ALL selected items
     let itemsHtml = '';
     cart.forEach((item, index) => {
-      const qty = parseInt(item.quantity || item.qty || 1, 10);
-      const price = parseFloat(item.price || item.unitPrice || 0);
+      const qty = parseInt(item.quantity || item.qty || item.count || 1, 10);
+      const price = parseFloat(item.price || item.unitPrice || item.cost || item.amount || 0);
+      const name = item.name || item.title || item.productName || item.product_name || 'Product Item';
+      const imgSrc = item.image || item.img || item.src || item.imageUrl || '';
 
       itemsHtml += `
         <div class="cart-item" style="display:flex; align-items:center; gap:12px; background:#181818; padding:12px; border-radius:10px; margin-bottom:10px; border:1px solid #282828;">
-          <img src="${item.image || item.img || ''}" style="width:55px; height:55px; object-fit:cover; border-radius:8px;" onerror="this.style.display='none'">
+          <img src="${imgSrc}" style="width:55px; height:55px; object-fit:cover; border-radius:8px;" onerror="this.style.display='none'">
           <div style="flex:1;">
-            <h4 style="margin:0 0 4px 0; color:#fff; font-size:0.95rem;">${item.name || item.title || 'Product'}</h4>
+            <h4 style="margin:0 0 4px 0; color:#fff; font-size:0.95rem;">${name}</h4>
             <p style="margin:0; color:#ff2a75; font-weight:bold; font-size:0.9rem;">₦${price.toLocaleString()}</p>
           </div>
           <div style="display:flex; align-items:center; gap:8px; background:#222; padding:4px 8px; border-radius:6px;">
@@ -81,35 +98,36 @@
 
     if (container) container.innerHTML = itemsHtml;
 
-    // Calculate Prices Correctly
+    // 4. Calculate Delivery and Grand Total
     const delivery = subtotal > 0 ? 1500 : 0;
     const grandTotal = subtotal + delivery;
 
-    // Direct DOM text replacements for pricing fields
-    document.querySelectorAll('*').forEach(el => {
+    // Update Price elements directly by ID or Text match
+    const subtotalEl = document.getElementById('cartSubtotal');
+    const totalEl = document.getElementById('cartTotal');
+
+    if (subtotalEl) subtotalEl.textContent = `₦${subtotal.toLocaleString()}`;
+    if (totalEl) totalEl.textContent = `₦${grandTotal.toLocaleString()}`;
+
+    // Fallback: scan text elements if IDs aren't set
+    document.querySelectorAll('div, p, span, td').forEach(el => {
       if (el.children.length === 0) {
-        const text = el.textContent.trim();
-        if (text === 'Subtotal' && el.nextElementSibling) {
+        const txt = el.textContent.trim();
+        if (txt === 'Subtotal' && el.nextElementSibling) {
           el.nextElementSibling.textContent = `₦${subtotal.toLocaleString()}`;
         }
-        if (text === 'Estimated Delivery' && el.nextElementSibling) {
-          el.nextElementSibling.textContent = `₦${delivery.toLocaleString()}`;
-        }
-        if (text === 'Total' && el.nextElementSibling) {
+        if (txt === 'Total' && el.nextElementSibling) {
           el.nextElementSibling.textContent = `₦${grandTotal.toLocaleString()}`;
         }
       }
     });
   };
 
-  // Function to adjust item quantity (+ / -)
+  // Adjust item quantity (+ / -)
   window.changeCartQty = function(index, delta) {
-    const rawCart = localStorage.getItem('poshella_cart') || localStorage.getItem('cart') || '[]';
-    let cart = [];
-    try { cart = JSON.parse(rawCart); } catch(e) { cart = []; }
-
+    let cart = getCartData();
     if (cart[index]) {
-      let currentQty = parseInt(cart[index].quantity || cart[index].qty || 1, 10);
+      let currentQty = parseInt(cart[index].quantity || cart[index].qty || cart[index].count || 1, 10);
       currentQty += delta;
 
       if (currentQty <= 0) {
@@ -117,10 +135,11 @@
       } else {
         if (cart[index].quantity !== undefined) cart[index].quantity = currentQty;
         if (cart[index].qty !== undefined) cart[index].qty = currentQty;
+        if (cart[index].count !== undefined) cart[index].count = currentQty;
       }
 
-      localStorage.setItem('poshella_cart', JSON.stringify(cart));
-      localStorage.setItem('cart', JSON.stringify(cart));
+      const keys = ['poshella_cart', 'cart'];
+      keys.forEach(k => localStorage.setItem(k, JSON.stringify(cart)));
       window.renderCartView();
     }
   };
@@ -132,12 +151,12 @@
       try { localStorage.setItem(VIEW_KEY, viewId); } catch(e) {}
       origSwitch(viewId);
       if (viewId === 'cart' || viewId === 'cart-view') {
-        window.renderCartView();
+        setTimeout(window.renderCartView, 20);
       }
     };
   }
 
-  // Restore state on page load
+  // Restore active tab and render cart on page load
   function init() {
     try {
       const savedView = localStorage.getItem(VIEW_KEY);
@@ -149,7 +168,7 @@
     window.renderCartView();
   }
 
-  // Replace alert popups with toast
+  // Toast replacements for alerts
   window.alert = function(msg) {
     let toast = document.getElementById('poshella-toast');
     if (!toast) {
