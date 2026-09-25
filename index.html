@@ -78,24 +78,25 @@
         .pay-btn { background: #00c853; color: #fff; border: none; padding: 12px; width: 100%; border-radius: 5px; font-weight: bold; font-size: 16px; cursor: pointer; text-align: center; }
     
 
-/* COMPACT AVATAR & PROFILE STYLES */
+
+/* CLEAN AVATAR BUBBLE & MODAL STYLES */
 .header-actions {
   display: flex;
   align-items: center;
   gap: 12px;
 }
 .profile-bubble {
-  width: 38px;
-  height: 38px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
-  background: #2a2a2a;
+  background: #242424;
   border: 2px solid #ff2a75;
   display: flex;
   justify-content: center;
   align-items: center;
   cursor: pointer;
   overflow: hidden;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.4);
 }
 .profile-bubble img {
   width: 100%;
@@ -103,14 +104,13 @@
   object-fit: cover;
 }
 .profile-bubble span {
-  font-size: 1.1rem;
+  font-size: 1.2rem;
 }
 
-/* MODAL STYLES */
 .modal-overlay {
   position: fixed;
   top: 0; left: 0; width: 100%; height: 100%;
-  background: rgba(0,0,0,0.75);
+  background: rgba(0,0,0,0.8);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -122,20 +122,20 @@
   color: #fff;
   padding: 24px;
   border-radius: 14px;
-  width: 88%;
-  max-width: 320px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.6);
+  width: 90%;
+  max-width: 330px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.7);
   position: relative;
   border: 1px solid #333;
   text-align: center;
 }
-.auth-modal h3 { color: #ff2a75; margin-top: 0; margin-bottom: 15px; font-size: 1.2rem; }
+.auth-modal h3 { color: #ff2a75; margin-top: 0; margin-bottom: 12px; font-size: 1.2rem; }
 .avatar-preview {
-  width: 80px;
-  height: 80px;
+  width: 75px;
+  height: 75px;
   border-radius: 50%;
   border: 2px solid #ff2a75;
-  margin: 0 auto 12px;
+  margin: 0 auto 10px;
   object-fit: cover;
   display: block;
   background: #262626;
@@ -143,24 +143,24 @@
 .upload-label {
   display: inline-block;
   font-size: 0.75rem;
-  background: #333;
+  background: #282828;
   color: #ff2a75;
   padding: 6px 12px;
   border-radius: 20px;
   cursor: pointer;
-  margin-bottom: 15px;
+  margin-bottom: 12px;
   border: 1px solid #ff2a75;
 }
-.auth-modal input[type="email"], .auth-modal input[type="tel"] {
+.auth-modal input {
   width: 100%;
   padding: 10px;
-  margin: 6px 0 14px;
+  margin: 5px 0 12px;
   border-radius: 8px;
   border: 1px solid #333;
-  background: #242424;
+  background: #222;
   color: #fff;
   box-sizing: border-box;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
 }
 .auth-modal button.submit-btn {
   width: 100%;
@@ -172,6 +172,7 @@
   font-weight: bold;
   cursor: pointer;
   font-size: 0.95rem;
+  margin-top: 5px;
 }
 .close-modal {
   position: absolute;
@@ -179,9 +180,20 @@
   background: none; border: none;
   color: #888; font-size: 1.5rem; cursor: pointer;
 }
+.toggle-auth {
+  margin-top: 12px;
+  font-size: 0.8rem;
+  color: #aaa;
+}
+.toggle-auth span {
+  color: #ff2a75;
+  cursor: pointer;
+  font-weight: bold;
+  text-decoration: underline;
+}
 .logout-link {
   display: block;
-  margin-top: 12px;
+  margin-top: 14px;
   color: #ff4d4d;
   font-size: 0.8rem;
   text-decoration: underline;
@@ -195,15 +207,7 @@
     <header>
         <h1>POSHELLA COSMETICS</h1>
         
-    <div class="header-actions">
-      <button id="profileBtn" class="auth-btn" onclick="openAuthModal()">👤 Login</button>
-      
-<div class="header-actions">
-  <button class="cart-icon-btn" onclick="toggleCart()">🛒 Cart <span class="cart-count" id="cart-count">0</span></button>
-  <div id="profileBubble" class="profile-bubble" onclick="openProfileModal()">
-    <span id="avatarIcon">👤</span>
-  </div>
-</div>
+    
 
     </div>
     
@@ -457,37 +461,75 @@
 
 
 
-<!-- PROFILE & AUTH MODAL -->
+
+
+
+
+
+
+<!-- AUTHENTICATION & PROFILE MODAL -->
 <div id="authModal" class="modal-overlay hidden">
   <div class="auth-modal">
     <button class="close-modal" onclick="closeAuthModal()">&times;</button>
-    <h3 id="modalTitle">Account Profile</h3>
+    <h3 id="modalTitle">Login to Account</h3>
     
-    <img id="avatarPreview" src="" class="avatar-preview hidden" alt="Profile Picture">
-    <div id="defaultAvatarIcon" style="font-size: 2.5rem; margin-bottom: 8px;">👤</div>
-    
-    <label class="upload-label" for="avatarInput">📷 Choose Photo from Gallery</label>
-    <input type="file" id="avatarInput" accept="image/*" style="display:none;" onchange="previewGalleryImage(event)">
+    <!-- Profile Image Upload (For Registration / Edit) -->
+    <div id="avatarSection" class="hidden">
+      <img id="avatarPreview" src="" class="avatar-preview hidden" alt="Profile Picture">
+      <div id="defaultAvatarIcon" style="font-size: 2.2rem; margin-bottom: 6px;">👤</div>
+      <label class="upload-label" for="avatarInput">📷 Pick Profile Photo</label>
+      <input type="file" id="avatarInput" accept="image/*" style="display:none;" onchange="previewGalleryImage(event)">
+    </div>
 
-    <form id="authForm" onsubmit="handleAuthSubmit(event)">
-      <div style="text-align: left;">
+    <!-- Login / Register Form -->
+    <form id="authForm" onsubmit="handleAuthSubmit(event)" style="text-align: left;">
+      
+      <div id="usernameGroup" class="hidden">
+        <label style="font-size: 0.75rem; color: #aaa;">Username (Unique)</label>
+        <input type="text" id="regUsername" placeholder="Choose a unique username">
+      </div>
+
+      <div id="loginIdentifierGroup">
+        <label style="font-size: 0.75rem; color: #aaa;" id="identifierLabel">Email or Phone Number</label>
+        <input type="text" id="loginIdentifier" placeholder="Email or Phone">
+      </div>
+
+      <div id="emailPhoneRegGroup" class="hidden">
         <label style="font-size: 0.75rem; color: #aaa;">Email Address</label>
-        <input type="email" id="userEmail" placeholder="yourname@gmail.com" required>
+        <input type="email" id="regEmail" placeholder="yourname@gmail.com">
         
         <label style="font-size: 0.75rem; color: #aaa;">Phone Number</label>
-        <input type="tel" id="userPhone" placeholder="08012345678" required>
+        <input type="tel" id="regPhone" placeholder="08012345678">
       </div>
-      <button type="submit" class="submit-btn" id="saveProfileBtn">Save Profile</button>
+
+      <label style="font-size: 0.75rem; color: #aaa;">Password</label>
+      <input type="password" id="authPassword" placeholder="••••••••" required>
+
+      <button type="submit" class="submit-btn" id="submitAuthBtn">Login</button>
     </form>
     
+    <div class="toggle-auth" id="authToggleText">
+      Don't have an account? <span onclick="switchMode('register')">Create Account</span>
+    </div>
+
     <span id="logoutBtn" class="logout-link hidden" onclick="logoutUser()">Log Out</span>
   </div>
 </div>
 
 
 <script>
-const SESSION_MS = 60 * 60 * 1000; // 1 hour session
+const SESSION_MS = 60 * 60 * 1000; // 1 hour session limit
+let currentMode = 'login'; // 'login', 'register', or 'profile'
 let tempAvatarBase64 = null;
+
+// Helper to get registered users array from localStorage
+function getUsers() {
+  return JSON.parse(localStorage.getItem('poshella_users')) || [];
+}
+
+function saveUsers(users) {
+  localStorage.setItem('poshella_users', JSON.stringify(users));
+}
 
 function getActiveSession() {
   const session = JSON.parse(localStorage.getItem('poshella_session'));
@@ -507,7 +549,7 @@ function updateProfileUI() {
   
   if (session) {
     if (session.avatar) {
-      profileBubble.innerHTML = `<img src="${session.avatar}" alt="Avatar">`;
+      profileBubble.innerHTML = `<img src="${session.avatar}" alt="${session.username}">`;
     } else {
       profileBubble.innerHTML = `<span>👤</span>`;
     }
@@ -516,43 +558,63 @@ function updateProfileUI() {
   }
 }
 
-function openProfileModal() {
-  const session = getActiveSession();
+function switchMode(mode) {
+  currentMode = mode;
   const modalTitle = document.getElementById('modalTitle');
-  const emailInput = document.getElementById('userEmail');
-  const phoneInput = document.getElementById('userPhone');
+  const avatarSection = document.getElementById('avatarSection');
+  const usernameGroup = document.getElementById('usernameGroup');
+  const loginIdentifierGroup = document.getElementById('loginIdentifierGroup');
+  const emailPhoneRegGroup = document.getElementById('emailPhoneRegGroup');
+  const submitAuthBtn = document.getElementById('submitAuthBtn');
+  const authToggleText = document.getElementById('authToggleText');
   const logoutBtn = document.getElementById('logoutBtn');
-  const saveBtn = document.getElementById('saveProfileBtn');
-  const avatarPreview = document.getElementById('avatarPreview');
-  const defaultIcon = document.getElementById('defaultAvatarIcon');
 
-  if (session) {
-    modalTitle.textContent = "Edit Profile";
-    emailInput.value = session.email || '';
-    phoneInput.value = session.phone || '';
+  document.getElementById('authForm').reset();
+
+  if (mode === 'login') {
+    modalTitle.textContent = "Login to Account";
+    avatarSection.classList.add('hidden');
+    usernameGroup.classList.add('hidden');
+    loginIdentifierGroup.classList.remove('hidden');
+    emailPhoneRegGroup.classList.add('hidden');
+    submitAuthBtn.textContent = "Login";
+    logoutBtn.classList.add('hidden');
+    authToggleText.innerHTML = `Don't have an account? <span onclick="switchMode('register')">Create Account</span>`;
+  } else if (mode === 'register') {
+    modalTitle.textContent = "Create New Account";
+    avatarSection.classList.remove('hidden');
+    usernameGroup.classList.remove('hidden');
+    loginIdentifierGroup.classList.add('hidden');
+    emailPhoneRegGroup.classList.remove('hidden');
+    submitAuthBtn.textContent = "Register & Login";
+    logoutBtn.classList.add('hidden');
+    authToggleText.innerHTML = `Already have an account? <span onclick="switchMode('login')">Login</span>`;
+  } else if (mode === 'profile') {
+    const session = getActiveSession();
+    modalTitle.textContent = `@${session.username}`;
+    avatarSection.classList.remove('hidden');
+    usernameGroup.classList.add('hidden');
+    loginIdentifierGroup.classList.add('hidden');
+    emailPhoneRegGroup.classList.add('hidden');
+    submitAuthBtn.textContent = "Update Profile Photo";
     logoutBtn.classList.remove('hidden');
-    saveBtn.textContent = "Update Profile";
+    authToggleText.innerHTML = ``;
     
     if (session.avatar) {
-      avatarPreview.src = session.avatar;
-      avatarPreview.classList.remove('hidden');
-      defaultIcon.classList.add('hidden');
-      tempAvatarBase64 = session.avatar;
-    } else {
-      avatarPreview.classList.add('hidden');
-      defaultIcon.classList.remove('hidden');
+      document.getElementById('avatarPreview').src = session.avatar;
+      document.getElementById('avatarPreview').classList.remove('hidden');
+      document.getElementById('defaultAvatarIcon').classList.add('hidden');
     }
-  } else {
-    modalTitle.textContent = "Create Account / Login";
-    emailInput.value = '';
-    phoneInput.value = '';
-    logoutBtn.classList.add('hidden');
-    saveBtn.textContent = "Login & Continue";
-    avatarPreview.classList.add('hidden');
-    defaultIcon.classList.remove('hidden');
-    tempAvatarBase64 = null;
   }
+}
 
+function openProfileModal() {
+  const session = getActiveSession();
+  if (session) {
+    switchMode('profile');
+  } else {
+    switchMode('login');
+  }
   document.getElementById('authModal').classList.remove('hidden');
 }
 
@@ -578,22 +640,97 @@ function previewGalleryImage(event) {
 
 function handleAuthSubmit(e) {
   e.preventDefault();
-  const email = document.getElementById('userEmail').value;
-  const phone = document.getElementById('userPhone').value;
-  
-  const existingSession = getActiveSession() || {};
-  
-  const newSession = {
-    email: email,
-    phone: phone,
-    avatar: tempAvatarBase64 || existingSession.avatar || null,
-    loginTimestamp: new Date().getTime()
-  };
-  
-  localStorage.setItem('poshella_session', JSON.stringify(newSession));
-  closeAuthModal();
-  updateProfileUI();
-  alert("Profile saved successfully!");
+  const users = getUsers();
+
+  if (currentMode === 'register') {
+    const username = document.getElementById('regUsername').value.trim();
+    const email = document.getElementById('regEmail').value.trim().toLowerCase();
+    const phone = document.getElementById('regPhone').value.trim();
+    const password = document.getElementById('authPassword').value;
+
+    if (!username || !email || !phone || !password) {
+      alert("Please fill in all registration fields.");
+      return;
+    }
+
+    // Check unique username and email
+    if (users.some(u => u.username.toLowerCase() === username.toLowerCase())) {
+      alert("Username already taken! Please choose another one.");
+      return;
+    }
+    if (users.some(u => u.email.toLowerCase() === email)) {
+      alert("An account with this email already exists.");
+      return;
+    }
+
+    const newUser = {
+      username: username,
+      email: email,
+      phone: phone,
+      password: password,
+      avatar: tempAvatarBase64 || null
+    };
+
+    users.push(newUser);
+    saveUsers(users);
+
+    // Create session (1 hour)
+    const session = {
+      username: newUser.username,
+      email: newUser.email,
+      phone: newUser.phone,
+      avatar: newUser.avatar,
+      loginTimestamp: new Date().getTime()
+    };
+
+    localStorage.setItem('poshella_session', JSON.stringify(session));
+    alert(`Account created successfully! Welcome @${username}`);
+    closeAuthModal();
+    updateProfileUI();
+
+  } else if (currentMode === 'login') {
+    const identifier = document.getElementById('loginIdentifier').value.trim().toLowerCase();
+    const password = document.getElementById('authPassword').value;
+
+    // Match by Email OR Phone + Password
+    const foundUser = users.find(u => 
+      (u.email.toLowerCase() === identifier || u.phone === identifier) && u.password === password
+    );
+
+    if (foundUser) {
+      const session = {
+        username: foundUser.username,
+        email: foundUser.email,
+        phone: foundUser.phone,
+        avatar: foundUser.avatar,
+        loginTimestamp: new Date().getTime()
+      };
+      localStorage.setItem('poshella_session', JSON.stringify(session));
+      alert(`Welcome back, @${foundUser.username}!`);
+      closeAuthModal();
+      updateProfileUI();
+    } else {
+      alert("Invalid login details! Check your Email/Phone and Password.");
+    }
+  } else if (currentMode === 'profile') {
+    const session = getActiveSession();
+    if (session && tempAvatarBase64) {
+      session.avatar = tempAvatarBase64;
+      session.loginTimestamp = new Date().getTime(); // refresh session timestamp
+      localStorage.setItem('poshella_session', JSON.stringify(session));
+
+      // Also update in registered users database
+      const userIdx = users.findIndex(u => u.username === session.username);
+      if (userIdx !== -1) {
+        users[userIdx].avatar = tempAvatarBase64;
+        saveUsers(users);
+      }
+
+      alert("Profile picture updated!");
+      closeAuthModal();
+      updateProfileUI();
+    }
+  }
 }
 
 function logoutUser() {
