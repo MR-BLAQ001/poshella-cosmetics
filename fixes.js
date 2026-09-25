@@ -1,68 +1,38 @@
 (function() {
   const VIEW_KEY = 'poshella_saved_page';
 
-  // 1. Force cart re-render safely once element is ready in DOM
-  function forceCartRender() {
-    const rawCart = localStorage.getItem('poshella_cart') || localStorage.getItem('cart') || '[]';
-    let cart = [];
-    try { cart = JSON.parse(rawCart); } catch(e) { cart = []; }
-
-    if (cart.length > 0) {
-      if (typeof window.renderCart === 'function') {
-        window.renderCart();
-      }
+  function initApp() {
+    // 1. Force cart view render using the exact function name from index.html
+    if (typeof window.renderCartView === 'function') {
+      window.renderCartView();
     }
-  }
 
-  // 2. Intercept switchView and save active tab
-  if (typeof window.switchView === 'function' && !window._switchWrapped) {
-    const origSwitch = window.switchView;
-    window.switchView = function(viewId) {
-      try { localStorage.setItem(VIEW_KEY, viewId); } catch(e) {}
-      origSwitch(viewId);
-      if (viewId === 'cart' || viewId === 'cart-view') {
-        setTimeout(forceCartRender, 50);
-      }
-    };
-    window._switchWrapped = true;
-  }
-
-  // 3. Monitor the Cart container until it appears on screen
-  function observeCartAndRender() {
-    const targetNode = document.body;
-    const config = { childList: true, subtree: true };
-
-    const callback = function(mutationsList, observer) {
-      const rawCart = localStorage.getItem('poshella_cart') || localStorage.getItem('cart') || '[]';
-      let cart = [];
-      try { cart = JSON.parse(rawCart); } catch(e) { cart = []; }
-
-      if (cart.length > 0) {
-        forceCartRender();
-      }
-    };
-
-    const observer = new MutationObserver(callback);
-    observer.observe(targetNode, config);
-
-    // Stop observing after 3 seconds to save performance
-    setTimeout(() => observer.disconnect(), 3000);
-  }
-
-  // 4. On page refresh: restore view and trigger cart checks
-  function initOnRefresh() {
+    // 2. Restore active page view on refresh
     try {
       const savedView = localStorage.getItem(VIEW_KEY);
       if (savedView && typeof window.switchView === 'function') {
         window.switchView(savedView);
+        if ((savedView === 'cart' || savedView === 'cart-view') && typeof window.renderCartView === 'function') {
+          window.renderCartView();
+        }
       }
     } catch(e) {}
-
-    forceCartRender();
-    observeCartAndRender();
   }
 
-  // Toast notifications replacement for alerts
+  // Intercept view switching to always trigger renderCartView when opening Cart
+  if (typeof window.switchView === 'function' && !window._wrapped) {
+    const origSwitch = window.switchView;
+    window.switchView = function(viewId) {
+      try { localStorage.setItem(VIEW_KEY, viewId); } catch(e) {}
+      origSwitch(viewId);
+      if ((viewId === 'cart' || viewId === 'cart-view') && typeof window.renderCartView === 'function') {
+        window.renderCartView();
+      }
+    };
+    window._wrapped = true;
+  }
+
+  // Intercept browser alerts to display silent toast notifications
   window.alert = function(msg) {
     let toast = document.getElementById('poshella-toast');
     if (!toast) {
@@ -77,8 +47,8 @@
   };
 
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initOnRefresh);
+    document.addEventListener('DOMContentLoaded', initApp);
   } else {
-    initOnRefresh();
+    initApp();
   }
 })();
