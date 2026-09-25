@@ -6,9 +6,9 @@
   <title>Poshella Cosmetics</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
-    body { background-color: #0e0e0e; color: #ffffff; padding-bottom: 70px; }
+    body { background-color: #0e0e0e; color: #ffffff; padding-bottom: 75px; }
 
-    /* TOP HEADER & SEARCH */
+    /* STICKY TOP HEADER */
     .sticky-header {
       position: sticky; top: 0; z-index: 1000; background: #121212; padding: 10px 14px; border-bottom: 1px solid #222;
     }
@@ -22,7 +22,7 @@
       border: none; background: transparent; color: #fff; outline: none; width: 100%; margin-left: 8px; font-size: 0.85rem;
     }
 
-    /* BANNER CAROUSEL */
+    /* HOME VIEW ELEMENTS */
     .banner-container { padding: 12px; }
     .banner-card {
       background: linear-gradient(135deg, #ff2a75 0%, #a80040 100%);
@@ -34,15 +34,11 @@
       background: #fff; color: #ff2a75; border: none; padding: 6px 14px; border-radius: 15px; font-weight: bold; font-size: 0.75rem; cursor: pointer;
     }
 
-    /* QUICK ACTION TILES (JUMIA GRID) */
     .quick-tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 0 12px 14px; }
-    .tile {
-      background: #181818; border: 1px solid #262626; border-radius: 10px; padding: 12px 6px; text-align: center; cursor: pointer;
-    }
+    .tile { background: #181818; border: 1px solid #262626; border-radius: 10px; padding: 12px 6px; text-align: center; cursor: pointer; }
     .tile span { display: block; font-size: 1.5rem; margin-bottom: 4px; }
     .tile p { font-size: 0.7rem; color: #ccc; font-weight: 600; }
 
-    /* FLASH SALES SECTION */
     .flash-sale-header {
       background: #ff2a75; color: #fff; padding: 10px 14px; border-radius: 10px 10px 0 0; display: flex; justify-content: space-between; align-items: center; font-weight: bold; font-size: 0.85rem;
     }
@@ -60,7 +56,38 @@
       width: 100%; background: #ff2a75; color: #fff; border: none; padding: 7px; border-radius: 6px; font-weight: bold; font-size: 0.75rem; cursor: pointer;
     }
 
-    /* BOTTOM APP NAVIGATION BAR */
+    /* ACCOUNT DASHBOARD VIEW (MATCHING JUMIA LAYOUT) */
+    .account-page { display: none; background: #0e0e0e; }
+    .account-page.active { display: block; }
+
+    .user-welcome-card { background: #181818; padding: 16px; border-bottom: 1px solid #262626; }
+    .welcome-title { font-size: 1.1rem; font-weight: bold; color: #ffffff; }
+    .welcome-email { font-size: 0.8rem; color: #ff2a75; margin-top: 2px; }
+    .credit-balance { font-size: 0.85rem; color: #aaa; margin-top: 10px; display: flex; align-items: center; gap: 6px; }
+    .credit-balance strong { color: #ffffff; }
+
+    .support-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 12px 16px; background: #121212; border-bottom: 1px solid #222; }
+    .btn-live-chat {
+      background: #ff2a75; color: #fff; border: none; padding: 10px; border-radius: 6px; font-weight: bold; font-size: 0.85rem; display: flex; align-items: center; justify-content: center; gap: 6px; cursor: pointer;
+    }
+    .btn-whatsapp {
+      background: #1e1e1e; color: #25D366; border: 1px solid #25D366; padding: 10px; border-radius: 6px; font-weight: bold; font-size: 0.85rem; display: flex; align-items: center; justify-content: center; gap: 6px; cursor: pointer;
+    }
+
+    .menu-section-header { font-size: 0.75rem; color: #888; text-transform: uppercase; padding: 14px 16px 6px; font-weight: bold; background: #0a0a0a; }
+    .menu-group { background: #141414; border-top: 1px solid #222; border-bottom: 1px solid #222; }
+    .menu-item {
+      display: flex; justify-content: space-between; align-items: center; padding: 13px 16px; border-bottom: 1px solid #1f1f1f; color: #ddd; font-size: 0.85rem; cursor: pointer;
+    }
+    .menu-item:last-child { border-bottom: none; }
+    .menu-item-left { display: flex; align-items: center; gap: 12px; }
+    .menu-item-left span { font-size: 1.1rem; }
+    .menu-arrow { color: #666; font-size: 0.9rem; }
+
+    .logout-btn-container { text-align: center; padding: 24px 16px; background: #0e0e0e; }
+    .logout-text-btn { color: #ff2a75; font-size: 0.9rem; font-weight: bold; cursor: pointer; text-decoration: underline; }
+
+    /* BOTTOM APP NAVIGATION */
     .bottom-nav {
       position: fixed; bottom: 0; left: 0; width: 100%; background: #121212; border-top: 1px solid #222; display: flex; justify-content: space-around; padding: 8px 0; z-index: 1000;
     }
@@ -71,7 +98,7 @@
       position: absolute; top: -3px; right: 12px; background: #ff2a75; color: #fff; font-size: 0.6rem; padding: 2px 5px; border-radius: 10px; font-weight: bold;
     }
 
-    /* MODAL STYLES */
+    /* MODALS */
     .modal-overlay {
       position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: flex; justify-content: center; align-items: center; z-index: 9999;
     }
@@ -105,84 +132,171 @@
     </div>
   </header>
 
-  <!-- BANNER CAROUSEL -->
-  <div class="banner-container">
-    <div class="banner-card">
-      <h2>Beauty Festival ✨</h2>
-      <p>Up to 40% OFF on all Skincare Products</p>
-      <button class="banner-btn">Shop Now →</button>
-    </div>
-  </div>
-
-  <!-- JUMIA STYLE ACTION TILES -->
-  <div class="quick-tiles">
-    <div class="tile">
-      <span>💄</span>
-      <p>MakeUp</p>
-    </div>
-    <div class="tile">
-      <span>✨</span>
-      <p>Glow Set</p>
-    </div>
-    <div class="tile">
-      <span>🚚</span>
-      <p>Free Delivery</p>
-    </div>
-  </div>
-
-  <!-- FLASH SALES SECTION -->
-  <div class="flash-container">
-    <div class="flash-sale-header">
-      <span>⚡ Flash Sales</span>
-      <span id="countdown">14h : 40m : 49s</span>
-    </div>
-    <div class="product-grid">
-      
-      <!-- Product 1 -->
-      <div class="product-card">
-        <img src="https://images.unsplash.com/photo-1556228720-195a672e8a03?w=300" alt="Glow Body Cream">
-        <div class="product-info">
-          <div class="product-title">Glow Body Cream - 250ml</div>
-          <div class="product-price">₦5,000</div>
-          <button class="add-cart-btn" onclick="addToCart('Glow Body Cream', 5000)">Add to Cart</button>
-        </div>
+  <!-- MAIN HOME VIEW CONTAINER -->
+  <main id="homeView">
+    <!-- BANNER CAROUSEL -->
+    <div class="banner-container">
+      <div class="banner-card">
+        <h2>Beauty Festival ✨</h2>
+        <p>Up to 40% OFF on all Skincare Products</p>
+        <button class="banner-btn">Shop Now →</button>
       </div>
-
-      <!-- Product 2 -->
-      <div class="product-card">
-        <img src="https://images.unsplash.com/photo-1586495777744-4413f21062fa?w=300" alt="Matte Lipstick">
-        <div class="product-info">
-          <div class="product-title">Matte Lipstick - Velvet Red</div>
-          <div class="product-price">₦3,500</div>
-          <button class="add-cart-btn" onclick="addToCart('Matte Lipstick', 3500)">Add to Cart</button>
-        </div>
-      </div>
-
     </div>
-  </div>
+
+    <!-- QUICK ACTION TILES -->
+    <div class="quick-tiles">
+      <div class="tile">
+        <span>💄</span>
+        <p>MakeUp</p>
+      </div>
+      <div class="tile">
+        <span>✨</span>
+        <p>Glow Set</p>
+      </div>
+      <div class="tile">
+        <span>🚚</span>
+        <p>Free Delivery</p>
+      </div>
+    </div>
+
+    <!-- FLASH SALES SECTION -->
+    <div class="flash-container">
+      <div class="flash-sale-header">
+        <span>⚡ Flash Sales</span>
+        <span id="countdown">14h : 40m : 49s</span>
+      </div>
+      <div class="product-grid">
+        
+        <div class="product-card">
+          <img src="https://images.unsplash.com/photo-1556228720-195a672e8a03?w=300" alt="Glow Body Cream">
+          <div class="product-info">
+            <div class="product-title">Glow Body Cream - 250ml</div>
+            <div class="product-price">₦5,000</div>
+            <button class="add-cart-btn" onclick="addToCart('Glow Body Cream', 5000)">Add to Cart</button>
+          </div>
+        </div>
+
+        <div class="product-card">
+          <img src="https://images.unsplash.com/photo-1586495777744-4413f21062fa?w=300" alt="Matte Lipstick">
+          <div class="product-info">
+            <div class="product-title">Matte Lipstick - Velvet Red</div>
+            <div class="product-price">₦3,500</div>
+            <button class="add-cart-btn" onclick="addToCart('Matte Lipstick', 3500)">Add to Cart</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <!-- ACCOUNT PAGE VIEW (EXACT JUMIA LAYOUT IN POSHELLA COLORS) -->
+  <section id="accountView" class="account-page">
+    
+    <div class="user-welcome-card">
+      <div class="welcome-title" id="welcomeUserText">Welcome Guest!</div>
+      <div class="welcome-email" id="userEmailText">Sign in to manage your account</div>
+      <div class="credit-balance">
+        <span>💳</span> Poshella store credit balance: <strong id="userBalance">₦ 0</strong>
+      </div>
+    </div>
+
+    <div class="support-buttons">
+      <button class="btn-live-chat">💬 Live Chat</button>
+      <button class="btn-whatsapp">💬 WhatsApp</button>
+    </div>
+
+    <div class="menu-section-header">Need Assistance?</div>
+    <div class="menu-group">
+      <div class="menu-item">
+        <div class="menu-item-left"><span>ℹ️</span> Help & Support</div>
+        <div class="menu-arrow">❯</div>
+      </div>
+    </div>
+
+    <div class="menu-section-header">My Poshella Account</div>
+    <div class="menu-group">
+      <div class="menu-item">
+        <div class="menu-item-left"><span>📦</span> Orders</div>
+        <div class="menu-arrow">❯</div>
+      </div>
+      <div class="menu-item">
+        <div class="menu-item-left"><span>✉️</span> Inbox</div>
+        <div class="menu-arrow">❯</div>
+      </div>
+      <div class="menu-item">
+        <div class="menu-item-left"><span>📝</span> Ratings & Reviews</div>
+        <div class="menu-arrow">❯</div>
+      </div>
+      <div class="menu-item">
+        <div class="menu-item-left"><span>🎟️</span> Vouchers</div>
+        <div class="menu-arrow">❯</div>
+      </div>
+      <div class="menu-item">
+        <div class="menu-item-left"><span>❤️</span> Wishlist</div>
+        <div class="menu-arrow">❯</div>
+      </div>
+      <div class="menu-item">
+        <div class="menu-item-left"><span>🏬</span> Followed Brands</div>
+        <div class="menu-arrow">❯</div>
+      </div>
+      <div class="menu-item">
+        <div class="menu-item-left"><span>🕒</span> Recently Viewed</div>
+        <div class="menu-arrow">❯</div>
+      </div>
+    </div>
+
+    <div class="menu-section-header">My Settings</div>
+    <div class="menu-group">
+      <div class="menu-item">
+        <div class="menu-item-left"><span>📍</span> Address Book</div>
+        <div class="menu-arrow">❯</div>
+      </div>
+      <div class="menu-item">
+        <div class="menu-item-left"><span>👤</span> Account Management</div>
+        <div class="menu-arrow">❯</div>
+      </div>
+      <div class="menu-item">
+        <div class="menu-item-left"><span>🔒</span> Close Account</div>
+        <div class="menu-arrow">❯</div>
+      </div>
+      <div class="menu-item">
+        <div class="menu-item-left"><span>🔔</span> Notification Preferences</div>
+        <div class="menu-arrow">❯</div>
+      </div>
+      <div class="menu-item">
+        <div class="menu-item-left"><span>🛡️</span> Privacy Policy</div>
+        <div class="menu-arrow">❯</div>
+      </div>
+    </div>
+
+    <div class="logout-btn-container" id="logoutContainer">
+      <span class="logout-text-btn" onclick="handleLogoutClick()">Logout</span>
+    </div>
+
+  </section>
 
   <!-- BOTTOM APP NAVIGATION -->
   <nav class="bottom-nav">
-    <div class="nav-item active">
+    <div class="nav-item active" id="navHome" onclick="switchView('home')">
       <span>🏠</span>
       Home
     </div>
-    <div class="nav-item">
+    <div class="nav-item" id="navCategories">
       <span>📋</span>
       Categories
     </div>
-    <div class="nav-item" onclick="openCart()">
+    <div class="nav-item" id="navCart" onclick="openCart()">
       <span>🛒</span>
       Cart
       <span class="badge" id="cartBadge">0</span>
     </div>
-    <div class="nav-item" onclick="openProfileModal()">
-      <span id="bottomNavAvatar">👤</span>
+    <div class="nav-item" id="navAccount" onclick="switchView('account')">
+      <span>👤</span>
       Account
     </div>
   </nav>
 
-  <!-- AUTHENTICATION & PROFILE MODAL -->
+  <!-- AUTHENTICATION MODAL (FOR UNAUTHENTICATED USERS) -->
   <div id="authModal" class="modal-overlay hidden">
     <div class="auth-modal">
       <button class="close-modal" onclick="closeAuthModal()">&times;</button>
@@ -214,16 +328,14 @@
       </form>
       
       <div class="toggle-auth" id="authToggleText">
-        Don't have an account? <span onclick="switchMode('register')">Create Account</span>
+        Don't have an account? <span onclick="switchAuthMode('register')">Create Account</span>
       </div>
-
-      <div id="logoutBtn" style="color:#ff4d4d; font-size:0.75rem; margin-top:10px; cursor:pointer;" class="hidden" onclick="logoutUser()">Log Out</div>
     </div>
   </div>
 
   <script>
     const SESSION_MS = 60 * 60 * 1000;
-    let currentMode = 'login';
+    let currentAuthMode = 'login';
     let cartCount = 0;
 
     function getUsers() { return JSON.parse(localStorage.getItem('poshella_users')) || []; }
@@ -237,14 +349,34 @@
       return null;
     }
 
-    function updateProfileUI() {
-      const session = getActiveSession();
-      const bottomNavAvatar = document.getElementById('bottomNavAvatar');
-      if (session) {
-        bottomNavAvatar.textContent = "✅";
+    function switchView(target) {
+      const homeView = document.getElementById('homeView');
+      const accountView = document.getElementById('accountView');
+      const navHome = document.getElementById('navHome');
+      const navAccount = document.getElementById('navAccount');
+
+      if (target === 'account') {
+        const session = getActiveSession();
+        if (!session) {
+          openAuthModal();
+          return;
+        }
+        homeView.style.display = 'none';
+        accountView.classList.add('active');
+        navHome.classList.remove('active');
+        navAccount.classList.add('active');
+        renderAccountDetails(session);
       } else {
-        bottomNavAvatar.textContent = "👤";
+        homeView.style.display = 'block';
+        accountView.classList.remove('active');
+        navHome.classList.add('active');
+        navAccount.classList.remove('active');
       }
+    }
+
+    function renderAccountDetails(session) {
+      document.getElementById('welcomeUserText').textContent = `Welcome ${session.username}!`;
+      document.getElementById('userEmailText').textContent = session.email;
     }
 
     function addToCart(name, price) {
@@ -257,15 +389,14 @@
       alert(`Cart has ${cartCount} items.`);
     }
 
-    function switchMode(mode) {
-      currentMode = mode;
+    function switchAuthMode(mode) {
+      currentAuthMode = mode;
       const modalTitle = document.getElementById('modalTitle');
       const usernameGroup = document.getElementById('usernameGroup');
       const loginIdentifierGroup = document.getElementById('loginIdentifierGroup');
       const emailPhoneRegGroup = document.getElementById('emailPhoneRegGroup');
       const submitAuthBtn = document.getElementById('submitAuthBtn');
       const authToggleText = document.getElementById('authToggleText');
-      const logoutBtn = document.getElementById('logoutBtn');
 
       document.getElementById('authForm').reset();
 
@@ -275,41 +406,31 @@
         loginIdentifierGroup.classList.remove('hidden');
         emailPhoneRegGroup.classList.add('hidden');
         submitAuthBtn.textContent = "Login";
-        logoutBtn.classList.add('hidden');
-        authToggleText.innerHTML = `Don't have an account? <span onclick="switchMode('register')">Create Account</span>`;
-      } else if (mode === 'register') {
+        authToggleText.innerHTML = `Don't have an account? <span onclick="switchAuthMode('register')">Create Account</span>`;
+      } else {
         modalTitle.textContent = "Create Account";
         usernameGroup.classList.remove('hidden');
         loginIdentifierGroup.classList.add('hidden');
         emailPhoneRegGroup.classList.remove('hidden');
         submitAuthBtn.textContent = "Register & Login";
-        logoutBtn.classList.add('hidden');
-        authToggleText.innerHTML = `Already have an account? <span onclick="switchMode('login')">Login</span>`;
-      } else if (mode === 'profile') {
-        const session = getActiveSession();
-        modalTitle.textContent = `@${session.username}`;
-        usernameGroup.classList.add('hidden');
-        loginIdentifierGroup.classList.add('hidden');
-        emailPhoneRegGroup.classList.add('hidden');
-        submitAuthBtn.classList.add('hidden');
-        logoutBtn.classList.remove('hidden');
-        authToggleText.innerHTML = `Session expires in 1 hour.`;
+        authToggleText.innerHTML = `Already have an account? <span onclick="switchAuthMode('login')">Login</span>`;
       }
     }
 
-    function openProfileModal() {
-      const session = getActiveSession();
-      if (session) { switchMode('profile'); } else { switchMode('login'); }
+    function openAuthModal() {
+      switchAuthMode('login');
       document.getElementById('authModal').classList.remove('hidden');
     }
 
-    function closeAuthModal() { document.getElementById('authModal').classList.add('hidden'); }
+    function closeAuthModal() {
+      document.getElementById('authModal').classList.add('hidden');
+    }
 
     function handleAuthSubmit(e) {
       e.preventDefault();
       const users = getUsers();
 
-      if (currentMode === 'register') {
+      if (currentAuthMode === 'register') {
         const username = document.getElementById('regUsername').value.trim();
         const email = document.getElementById('regEmail').value.trim().toLowerCase();
         const phone = document.getElementById('regPhone').value.trim();
@@ -323,10 +444,10 @@
 
         const session = { ...newUser, loginTimestamp: new Date().getTime() };
         localStorage.setItem('poshella_session', JSON.stringify(session));
-        alert(`Account created! Welcome @${username}`);
-        closeAuthModal(); updateProfileUI();
+        closeAuthModal();
+        switchView('account');
 
-      } else if (currentMode === 'login') {
+      } else if (currentAuthMode === 'login') {
         const identifier = document.getElementById('loginIdentifier').value.trim().toLowerCase();
         const password = document.getElementById('authPassword').value;
 
@@ -334,22 +455,20 @@
         if (foundUser) {
           const session = { ...foundUser, loginTimestamp: new Date().getTime() };
           localStorage.setItem('poshella_session', JSON.stringify(session));
-          alert(`Welcome back @${foundUser.username}!`);
-          closeAuthModal(); updateProfileUI();
+          closeAuthModal();
+          switchView('account');
         } else {
           alert("Invalid Email/Phone or Password!");
         }
       }
     }
 
-    function logoutUser() {
-      if (confirm("Log out?")) {
+    function handleLogoutClick() {
+      if (confirm("Are you sure you want to log out?")) {
         localStorage.removeItem('poshella_session');
-        closeAuthModal(); updateProfileUI();
+        switchView('home');
       }
     }
-
-    window.addEventListener('DOMContentLoaded', updateProfileUI);
   </script>
 </body>
 </html>
