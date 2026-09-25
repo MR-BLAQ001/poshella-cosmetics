@@ -99,6 +99,8 @@
 
     .cart-title-bar { font-size: 1.1rem; font-weight: bold; color: #fff; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #222; padding-bottom: 10px; }
     
+    .cart-timer-box { background: #1f1418; border: 1px solid #3d1b27; color: #ff2a75; padding: 8px 12px; border-radius: 8px; font-size: 0.8rem; font-weight: bold; margin-bottom: 12px; text-align: center; display: flex; justify-content: center; align-items: center; gap: 6px; }
+
     .cart-item-card { background: #141414; border: 1px solid #222; border-radius: 10px; padding: 12px; display: flex; gap: 12px; margin-bottom: 10px; position: relative; }
     .cart-item-img { width: 75px; height: 75px; object-fit: cover; border-radius: 8px; background: #222; }
     .cart-item-details { flex: 1; display: flex; flex-direction: column; justify-content: space-between; }
@@ -198,6 +200,10 @@
     <div class="cart-title-bar">
       <span>Shopping Cart (<span id="cartItemCountHeader">0</span>)</span>
       <span style="font-size: 0.8rem; color: #ff2a75; cursor: pointer;" onclick="clearCart()">Clear All</span>
+    </div>
+
+    <div id="cartTimerBox" class="cart-timer-box" style="display:none;">
+      ⏳ Cart reserved for <span id="cartTimerDisplay">15:00</span> minutes
     </div>
 
     <div id="cartItemsContainer">
@@ -315,6 +321,10 @@
   <script>
     let cart = [];
     let toastTimeout = null;
+    let timerInterval = null;
+    const CART_STORAGE_KEY = 'poshella_cart_data';
+    const TIMER_STORAGE_KEY = 'poshella_cart_expiry';
+    const RESERVATION_MINUTES = 15;
 
     const productsDatabase = [
       { id: 1, name: "Glow Body Cream - 250ml", price: 5000, img: "https://images.unsplash.com/photo-1556228720-195a672e8a03?w=500" },
@@ -324,6 +334,55 @@
       { id: 5, name: "Luxury Organic Face Oil", price: 9000, img: "https://images.unsplash.com/photo-1608248597260-6521e847c295?w=500" },
       { id: 6, name: "Gentle Cleansing Gel 200ml", price: 4500, img: "https://images.unsplash.com/photo-1556228720-195a672e8a03?w=500" }
     ];
+
+    function saveCartToStorage() {
+      localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
+    }
+
+    function loadCartFromStorage() {
+      const savedCart = localStorage.getItem(CART_STORAGE_KEY);
+      if (savedCart) {
+        try {
+          cart = JSON.parse(savedCart);
+        } catch(e) {
+          cart = [];
+        }
+      }
+      updateCartBadge();
+    }
+
+    function startOrResumeCartTimer() {
+      let expiryTime = localStorage.getItem(TIMER_STORAGE_KEY);
+      
+      if (!expiryTime || Date.now() > parseInt(expiryTime)) {
+        expiryTime = Date.now() + (RESERVATION_MINUTES * 60 * 1000);
+        localStorage.setItem(TIMER_STORAGE_KEY, expiryTime);
+      }
+
+      if (timerInterval) clearInterval(timerInterval);
+
+      timerInterval = setInterval(() => {
+        const now = Date.now();
+        const diff = parseInt(expiryTime) - now;
+
+        if (diff <= 0) {
+          clearInterval(timerInterval);
+          clearCart(true); // Expired reset
+          showToast("Cart reservation expired!");
+          return;
+        }
+
+        const mins = Math.floor(diff / (1000 * 60));
+        const secs = Math.floor((diff % (1000 * 60)) / 1000);
+        const formatted Mins = String(mins).padStart(2, '0');
+        const formattedSecs = String(secs).padStart(2, '0');
+
+        const displayEl = document.getElementById('cartTimerDisplay');
+        if (displayEl) {
+          displayEl.textContent = `${formattedMins}:${formattedSecs}`;
+        }
+      }, 1000);
+    }
 
     function showToast(message) {
       const toast = document.getElementById('toastBanner');
@@ -389,7 +448,9 @@
         cart.push({ ...prod, qty: 1 });
       }
 
+      saveCartToStorage();
       updateCartBadge();
+      startOrResumeCartTimer();
       showToast("✓ Cart successfully updated");
     }
 
@@ -408,18 +469,23 @@
         cart = cart.filter(i => i.id !== productId);
       }
 
+      saveCartToStorage();
       updateCartBadge();
       renderCartView();
     }
 
     function removeItem(productId) {
       cart = cart.filter(i => i.id !== productId);
+      saveCartToStorage();
       updateCartBadge();
       renderCartView();
     }
 
-    function clearCart() {
+    function clearCart(expired = false) {
       cart = [];
+      localStorage.removeItem(CART_STORAGE_KEY);
+      localStorage.removeItem(TIMER_STORAGE_KEY);
+      if (timerInterval) clearInterval(timerInterval);
       updateCartBadge();
       renderCartView();
     }
@@ -427,6 +493,7 @@
     function renderCartView() {
       const container = document.getElementById('cartItemsContainer');
       const summaryBox = document.getElementById('cartSummaryContainer');
+      const timerBox = document.getElementById('cartTimerBox');
 
       if (cart.length === 0) {
         container.innerHTML = `
@@ -436,10 +503,13 @@
           </div>
         `;
         summaryBox.style.display = 'none';
+        timerBox.style.display = 'none';
         return;
       }
 
       summaryBox.style.display = 'block';
+      timerBox.style.display = 'flex';
+      startOrResumeCartTimer();
 
       let subtotal = 0;
       container.innerHTML = cart.map(item => {
@@ -519,6 +589,7 @@
     }
 
     window.addEventListener('DOMContentLoaded', () => {
+      loadCartFromStorage();
       renderMainGrid();
     });
   </script>
