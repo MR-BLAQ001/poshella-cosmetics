@@ -28,6 +28,13 @@
       border: none; background: transparent; color: #fff; outline: none; width: 100%; margin-left: 8px; font-size: 0.85rem;
     }
 
+    /* SUBPAGE HEADER (WITH BACK ARROW) */
+    .subpage-header {
+      display: flex; align-items: center; justify-content: space-between; background: #121212; padding: 12px 16px; border-bottom: 1px solid #222;
+    }
+    .subpage-header .back-btn { font-size: 1.3rem; color: #fff; cursor: pointer; padding-right: 12px; }
+    .subpage-header .header-title { font-size: 0.95rem; font-weight: bold; color: #fff; flex: 1; }
+
     /* HOME VIEW ELEMENTS */
     .banner-container { padding: 12px; }
     .banner-card {
@@ -138,6 +145,11 @@
     .menu-item { display: flex; justify-content: space-between; align-items: center; padding: 13px 16px; border-bottom: 1px solid #1f1f1f; color: #ddd; font-size: 0.85rem; cursor: pointer; }
     .menu-item-left { display: flex; align-items: center; gap: 12px; }
 
+    /* HELP & SERVICES SUBPAGE VIEW */
+    .help-page { display: none; background: #0e0e0e; min-height: 90vh; }
+    .help-page.active { display: block; }
+    .help-sub-text { font-size: 0.75rem; color: #888; font-weight: 600; }
+
     /* BOTTOM NAV & BADGE */
     .bottom-nav {
       position: fixed; bottom: 0; left: 0; width: 100%; background: #121212; border-top: 1px solid #222; display: flex; justify-content: space-around; padding: 8px 0; z-index: 1000;
@@ -173,7 +185,7 @@
   </div>
 
   <!-- STICKY HEADER WITH SEARCH -->
-  <header class="sticky-header">
+  <header class="sticky-header" id="mainHeader">
     <div class="top-bar">
       <span class="brand-name" onclick="switchView('home')">POSHELLA</span>
       <span style="font-size: 0.75rem; color: #aaa;">📞 Call to Order</span>
@@ -284,7 +296,7 @@
     </div>
   </section>
 
-  <!-- ACCOUNT PAGE VIEW -->
+  <!-- ACCOUNT DASHBOARD VIEW -->
   <section id="accountView" class="account-page">
     <div class="user-welcome-card">
       <div class="welcome-title" id="welcomeUserText">Welcome Guest!</div>
@@ -301,7 +313,7 @@
 
     <div class="menu-section-header">Need Assistance?</div>
     <div class="menu-group">
-      <div class="menu-item"><div class="menu-item-left"><span>ℹ️</span> Help & Support</div><div>❯</div></div>
+      <div class="menu-item" onclick="switchView('help')"><div class="menu-item-left"><span>ℹ️</span> Help & Services</div><div>❯</div></div>
     </div>
 
     <div class="menu-section-header">My Poshella Account</div>
@@ -315,6 +327,34 @@
 
     <div style="text-align: center; padding: 24px 16px;">
       <span style="color:#ff2a75; font-weight:bold; cursor:pointer;" onclick="handleLogoutClick()">Logout</span>
+    </div>
+  </section>
+
+  <!-- HELP & SERVICES VIEW -->
+  <section id="helpView" class="help-page">
+    <div class="subpage-header">
+      <span class="back-btn" onclick="switchView('account')">←</span>
+      <span class="header-title">Help & Services</span>
+      <span style="font-size: 1.2rem; cursor: pointer;" onclick="switchView('cart')">🛒</span>
+    </div>
+
+    <div class="menu-section-header">About Poshella</div>
+    <div class="menu-group">
+      <div class="menu-item"><div>Poshella Services</div><div>❯</div></div>
+      <div class="menu-item"><div>Help Center</div><div>❯</div></div>
+    </div>
+
+    <div class="menu-section-header">Settings</div>
+    <div class="menu-group">
+      <div class="menu-item"><div>Push Notifications</div><div></div></div>
+      <div class="menu-item"><div>Country</div><div class="help-sub-text">NIGERIA ❯</div></div>
+      <div class="menu-item"><div>Language</div><div class="help-sub-text">ENGLISH</div></div>
+    </div>
+
+    <div class="menu-section-header">App Info</div>
+    <div class="menu-group">
+      <div class="menu-item"><div>App Version 1.0.0</div><div class="help-sub-text">UP TO DATE</div></div>
+      <div class="menu-item" onclick="clearAppCache()"><div>Cache Used: <span id="cacheUsageVal">431 kB</span></div><div style="color:#ff2a75; font-weight:bold;">CLEAR</div></div>
     </div>
   </section>
 
@@ -414,6 +454,11 @@
     }
 
     function closeToast() { document.getElementById('toastBanner').classList.add('hidden'); }
+
+    function clearAppCache() {
+      document.getElementById('cacheUsageVal').textContent = '0 kB';
+      showToast("App cache cleared!");
+    }
 
     function renderMainGrid() {
       const grid = document.getElementById('mainProductGrid');
@@ -576,6 +621,8 @@
       const accountView = document.getElementById('accountView');
       const detailsView = document.getElementById('detailsView');
       const cartView = document.getElementById('cartView');
+      const helpView = document.getElementById('helpView');
+      const mainHeader = document.getElementById('mainHeader');
       const mainBottomNav = document.getElementById('mainBottomNav');
 
       const navHome = document.getElementById('navHome');
@@ -586,10 +633,13 @@
       accountView.classList.remove('active');
       detailsView.classList.remove('active');
       cartView.classList.remove('active');
+      helpView.classList.remove('active');
 
       navHome.classList.remove('active');
       navCart.classList.remove('active');
       navAccount.classList.remove('active');
+
+      mainHeader.style.display = 'block';
 
       if (target === 'cart') {
         cartView.classList.add('active');
@@ -602,6 +652,10 @@
       } else if (target === 'account') {
         accountView.classList.add('active');
         navAccount.classList.add('active');
+        mainBottomNav.style.display = 'flex';
+      } else if (target === 'help') {
+        helpView.classList.add('active');
+        mainHeader.style.display = 'none';
         mainBottomNav.style.display = 'flex';
       } else {
         homeView.style.display = 'block';
