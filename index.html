@@ -840,7 +840,9 @@
       const navAccount = document.getElementById('navAccount');
         const navCategories = document.getElementById('navCategories');
 
-      homeView.style.display = 'none';
+      
+const categoriesView = document.getElementById('categoriesView');
+if (categoriesView) categoriesView.style.display = 'none';homeView.style.display = 'none';
       accountView.classList.remove('active');
       detailsView.classList.remove('active');
       cartView.classList.remove('active');
