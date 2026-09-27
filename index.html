@@ -246,16 +246,130 @@
   to {
     transform: rotate(360deg);
   }
+}/* NEW POSHELLA LOADER ANIMATION */
+#pageLoader {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.5s ease;
+  overflow: hidden;
+}
+
+.loader-text {
+  position: relative;
+  z-index: 2;
+  color: #ff2f92;
+  font-size: 1rem;
+  font-weight: bold;
+  white-space: nowrap;
+}
+
+.loader-dots {
+  display: inline-flex;
+  margin-left: 3px;
+}
+
+.loader-dots span {
+  display: inline-block;
+  font-size: 1.1rem;
+  animation: dotWave 0.9s ease-in-out infinite;
+}
+
+.loader-dots span:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.loader-dots span:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+@keyframes dotWave {
+  0%, 60%, 100% {
+    transform: translateY(0);
+    opacity: 0.3;
+  }
+
+  30% {
+    transform: translateY(-6px);
+    opacity: 1;
+  }
+}
+
+.loader-stars span {
+  position: absolute;
+  color: #ff8fc4;
+  font-size: 0.9rem;
+  opacity: 0;
+  animation: starMove 2.2s ease-in-out infinite;
+}
+
+.loader-stars span:nth-child(1) {
+  left: 35%;
+  top: 42%;
+}
+
+.loader-stars span:nth-child(2) {
+  left: 62%;
+  top: 43%;
+  animation-delay: 0.5s;
+}
+
+.loader-stars span:nth-child(3) {
+  left: 40%;
+  top: 57%;
+  animation-delay: 1s;
+}
+
+.loader-stars span:nth-child(4) {
+  left: 58%;
+  top: 56%;
+  animation-delay: 1.5s;
+}
+
+@keyframes starMove {
+  0% {
+    transform: translate(0, 8px) rotate(0deg) scale(0.5);
+    opacity: 0;
+  }
+
+  30% {
+    opacity: 1;
+  }
+
+  70% {
+    opacity: 0.7;
+  }
+
+  100% {
+    transform: translate(12px, -12px) rotate(180deg) scale(1);
+    opacity: 0;
+  }
 }
   </style>
 </head>
 <body>
 <!-- PAGE LOADER -->
 <div id="pageLoader">
-  <div class="loader-circle"></div>
-  <p>Loading Poshella... ✨</p>
-</div>
-  <!-- GLOBAL TOAST NOTIFICATION BANNER -->
+  <div class="loader-stars">
+    <span>✨</span>
+    <span>✦</span>
+    <span>✧</span>
+    <span>✨</span>
+  </div>
+
+  <div class="loader-text">
+    Loading Poshella
+    <span class="loader-dots">
+      <span>•</span>
+      <span>•</span>
+      <span>•</span>
+    </span>
+  </div>
+</div>  <!-- GLOBAL TOAST NOTIFICATION BANNER -->
   <div id="toastBanner" class="toast-banner hidden">
     <span id="toastMessage">✓ Cart successfully updated</span>
     <span style="cursor:pointer;" onclick="closeToast()">✕</span>
