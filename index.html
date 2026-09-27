@@ -246,110 +246,7 @@
   to {
     transform: rotate(360deg);
   }
-}/* NEW POSHELLA LOADER ANIMATION */
-#pageLoader {
-  position: fixed;
-  inset: 0;
-  z-index: 99999;
-  background: #000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: opacity 0.5s ease;
-  overflow: hidden;
-}
-
-.loader-text {
-  position: relative;
-  z-index: 2;
-  color: #ff2f92;
-  font-size: 1rem;
-  font-weight: bold;
-  white-space: nowrap;
-}
-
-.loader-dots {
-  display: inline-flex;
-  margin-left: 3px;
-}
-
-.loader-dots span {
-  display: inline-block;
-  font-size: 1.1rem;
-  animation: dotWave 0.9s ease-in-out infinite;
-}
-
-.loader-dots span:nth-child(2) {
-  animation-delay: 0.15s;
-}
-
-.loader-dots span:nth-child(3) {
-  animation-delay: 0.3s;
-}
-
-@keyframes dotWave {
-  0%, 60%, 100% {
-    transform: translateY(0);
-    opacity: 0.3;
-  }
-
-  30% {
-    transform: translateY(-6px);
-    opacity: 1;
-  }
-}
-
-.loader-stars span {
-  position: absolute;
-  color: #ff8fc4;
-  font-size: 0.9rem;
-  opacity: 0;
-  animation: starMove 2.2s ease-in-out infinite;
-}
-
-.loader-stars span:nth-child(1) {
-  left: 35%;
-  top: 42%;
-}
-
-.loader-stars span:nth-child(2) {
-  left: 62%;
-  top: 43%;
-  animation-delay: 0.5s;
-}
-
-.loader-stars span:nth-child(3) {
-  left: 40%;
-  top: 57%;
-  animation-delay: 1s;
-}
-
-.loader-stars span:nth-child(4) {
-  left: 58%;
-  top: 56%;
-  animation-delay: 1.5s;
-}
-
-@keyframes starMove {
-  0% {
-    transform: translate(0, 8px) rotate(0deg) scale(0.5);
-    opacity: 0;
-  }
-
-  30% {
-    opacity: 1;
-  }
-
-  70% {
-    opacity: 0.7;
-  }
-
-  100% {
-    transform: translate(12px, -12px) rotate(180deg) scale(1);
-    opacity: 0;
-  }
-}
-  </style>
+}</style>
 </head>
 <body>
 <!-- PAGE LOADER -->
@@ -368,7 +265,71 @@
       <span>•</span>
       <span>•</span>
     </span>
-  </div>
+  </div><style>
+#pageLoader{
+  position:fixed;
+  inset:0;
+  z-index:99999;
+  background:#000;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  transition:opacity .5s ease;
+  overflow:hidden;
+}
+
+.loader-text{
+  color:#ff2f92;
+  font-size:16px;
+  font-weight:bold;
+  position:relative;
+  z-index:2;
+}
+
+.loader-dots{
+  display:inline-flex;
+  margin-left:3px;
+}
+
+.loader-dots span{
+  display:inline-block;
+  animation:wave .8s infinite;
+}
+
+.loader-dots span:nth-child(2){animation-delay:.15s}
+.loader-dots span:nth-child(3){animation-delay:.3s}
+
+@keyframes wave{
+  0%,60%,100%{transform:translateY(0);opacity:.3}
+  30%{transform:translateY(-6px);opacity:1}
+}
+
+.loader-stars span{
+  position:absolute;
+  color:#ff8fc4;
+  font-size:13px;
+  opacity:0;
+  animation:floatStar 2s infinite;
+}
+
+.loader-stars span:nth-child(1){left:38%;top:43%}
+.loader-stars span:nth-child(2){left:60%;top:44%;animation-delay:.5s}
+.loader-stars span:nth-child(3){left:42%;top:56%;animation-delay:1s}
+.loader-stars span:nth-child(4){left:57%;top:55%;animation-delay:1.5s}
+
+@keyframes floatStar{
+  0%{
+    transform:translate(0,8px) rotate(0deg) scale(.5);
+    opacity:0;
+  }
+  30%{opacity:1}
+  70%{opacity:.6}
+  100%{
+    transform:translate(15px,-15px) rotate(180deg) scale(1);
+    opacity:0;
+  }
+}
+</style>
 </div>  <!-- GLOBAL TOAST NOTIFICATION BANNER -->
   <div id="toastBanner" class="toast-banner hidden">
     <span id="toastMessage">✓ Cart successfully updated</span>
