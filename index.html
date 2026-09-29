@@ -937,7 +937,8 @@
     }
 
     function switchView(target) {
-      const homeView = document.getElementById('homeView');
+showPoshellaLoader();    
+  const homeView = document.getElementById('homeView');
       const accountView = document.getElementById('accountView');
       const detailsView = document.getElementById('detailsView');
       const cartView = document.getElementById('cartView');
@@ -1119,19 +1120,34 @@ function openCallToOrder(event) {
   </div>
 </div>
 <script>
-window.addEventListener("load", function () {
+function showPoshellaLoader() {
     const loader = document.getElementById("pageLoader");
 
-    setTimeout(function () {
-        if (loader) {
-            loader.style.opacity = "0";
-            loader.style.pointerEvents = "none";
-
+    if (loader) {
+        loader.style.display = "flex";
+        loader.style.opacity = "1";
+        loader.style.pointerEvents = "auto";
             setTimeout(function () {
-                loader.style.display = "none";
-            }, 400);
-        }
-    }, 500);
-});
-</script>
-</body></html>
+                hidePoshellaLoader();
+            }, 600);
+    }
+}
+
+function hidePoshellaLoader() {
+    const loader = document.getElementById("pageLoader");
+
+    if (loader) {
+        loader.style.opacity = "0";
+        loader.style.pointerEvents = "none";
+
+        setTimeout(function () {
+            loader.style.display = "none";
+        }, 500);
+    }
+}
+
+window.addEventListener("load", function () {
+    setTimeout(function () {
+        hidePoshellaLoader();
+    }, 800);
+});</body></html>
