@@ -1076,8 +1076,10 @@ window.addEventListener("load", function () {
       }
     }
 
-    function switchView(target) {
-showPoshellaLoader();
+
+function switchView(target) {
+
+localStorage.setItem("poshella_current_view", target);showPoshellaLoader();
   const homeView = document.getElementById('homeView');
       const accountView = document.getElementById('accountView');
       const detailsView = document.getElementById('detailsView');
