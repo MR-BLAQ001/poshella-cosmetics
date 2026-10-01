@@ -988,7 +988,28 @@ function loadSavedPaymentMethod() {
   }
 }
 
+
 window.addEventListener("load", function () {
+  const savedView = localStorage.getItem("poshella_current_view");
+
+alert("Saved view: " + savedView);
+  const allowedViews = [
+    "home",
+    "categories",
+    "cart",
+    "account",
+    "details",
+    "help",
+    "checkout",
+    "helpCenter"
+  ];
+
+  if (savedView && allowedViews.includes(savedView)) {
+    setTimeout(function () {
+      switchView(savedView);
+    }, 100);
+  }
+});window.addEventListener("load", function () {
   loadSavedPaymentMethod();
 
   const saveCheckbox = document.getElementById("savePaymentMethod");
