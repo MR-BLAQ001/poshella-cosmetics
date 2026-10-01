@@ -1178,11 +1178,33 @@ if (categoriesView) categoriesView.style.display = 'none';homeView.style.display
       switchView('home');
     }
 
-    window.addEventListener('DOMContentLoaded', () => {
       loadCartFromStorage();
-      renderMainGrid();
-    });
-  </script>
+  renderMainGrid();
+});  loadCartFromStorage();
+  renderMainGrid();
+window.addEventListener('DOMContentLoaded', () => {
+  loadCartFromStorage();
+  renderMainGrid();
+
+  const savedView = localStorage.getItem('poshella_current_view');
+
+  const allowedViews = [
+    'home',
+    'categories',
+    'cart',
+    'account',
+    'details',
+    'help',
+    'checkout',
+    'helpCenter'
+  ];
+
+  if (savedView && allowedViews.includes(savedView)) {
+    setTimeout(() => {
+      switchView(savedView);
+    }, 300);
+  }
+});  </script>
 <script src="orders.js"></script>
 <script src="fixes.js"></script>
 
